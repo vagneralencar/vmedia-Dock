@@ -4,6 +4,7 @@ import { DockBar } from './components/dock/DockBar';
 import { SettingsModal } from './components/settings/SettingsModal';
 import { ContextMenu, ContextMenuData } from './components/dock/ContextMenu';
 import { PinnedApp } from './types/dock';
+import { tauriService } from './services/tauri';
 
 export const App: React.FC = () => {
   const { 
@@ -27,11 +28,11 @@ export const App: React.FC = () => {
     fetchWorkspaces();
   }, [fetchWorkspaces]);
 
-  // Listener de atalhos de teclado (Ctrl + Alt + 1..9 para trocar ambientes)
+  // Listener de atalhos de teclado globais
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.altKey) {
-        // Atalho numérico (1 a 9)
+        // Atalho numérico (1 a 9) para trocar ambientes
         const num = parseInt(e.key, 10);
         if (!isNaN(num) && num >= 1 && num <= workspaces.length) {
           const targetWs = workspaces[num - 1];
@@ -45,6 +46,28 @@ export const App: React.FC = () => {
         if (e.key.toLowerCase() === 's' || e.key === ',') {
           e.preventDefault();
           setIsSettingsOpen((prev) => !prev);
+        }
+
+        // Ctrl + Alt + Espaço para alternar visibilidade instantânea
+        if (e.code === 'Space') {
+          e.preventDefault();
+          setIsBarHovered((prev) => !prev);
+        }
+
+        // Ctrl + Alt + N para adicionar aplicativo
+        if (e.key.toLowerCase() === 'n') {
+          e.preventDefault();
+          (async () => {
+            const path = await tauriService.selectFile();
+            if (path) {
+              const name = path.split('\\').pop()?.split('/').pop()?.replace('.exe', '') || 'App';
+              useDockStore.getState().addAppToWorkspace({
+                name,
+                exec_path: path,
+                icon_name: 'AppWindow',
+              });
+            }
+          })();
         }
       }
     };

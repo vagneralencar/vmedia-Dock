@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { PinnedApp } from '../../types/dock';
+import { useDockStore } from '../../stores/dockStore';
+import { tauriService } from '../../services/tauri';
 import { 
   Play, 
   Trash2, 
@@ -114,14 +116,22 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           </div>
 
           <button
-            onClick={() => {
-              onOpenSettings();
+            onClick={async () => {
               onClose();
+              const path = await tauriService.selectFile();
+              if (path) {
+                const name = path.split('\\').pop()?.split('/').pop()?.replace('.exe', '') || 'App';
+                useDockStore.getState().addAppToWorkspace({
+                  name,
+                  exec_path: path,
+                  icon_name: 'AppWindow',
+                });
+              }
             }}
             className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-xl hover:bg-white/10 text-white/90 hover:text-white transition-colors"
           >
-            <Sliders className="w-3.5 h-3.5 text-blue-400" />
-            <span>Ajustes do Dock...</span>
+            <PlusCircle className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Adicionar Aplicativo (.exe)...</span>
           </button>
 
           <button
@@ -131,8 +141,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             }}
             className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-xl hover:bg-white/10 text-white/90 hover:text-white transition-colors"
           >
-            <PlusCircle className="w-3.5 h-3.5 text-amber-400" />
-            <span>Adicionar Widget...</span>
+            <Sliders className="w-3.5 h-3.5 text-blue-400" />
+            <span>Ajustes do Dock...</span>
           </button>
 
           <button

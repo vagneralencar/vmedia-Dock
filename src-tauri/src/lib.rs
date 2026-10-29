@@ -88,6 +88,16 @@ fn set_autostart(enable: bool, state: State<AppState>) -> Result<(), String> {
     state.os_manager.set_autostart(enable)
 }
 
+#[tauri::command]
+fn select_file(state: State<AppState>) -> Result<Option<String>, String> {
+    state.os_manager.select_file()
+}
+
+#[tauri::command]
+fn extract_icon(path: String, state: State<AppState>) -> Result<Option<String>, String> {
+    state.os_manager.extract_icon(&path)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let metrics_service = MetricsService::new();
@@ -115,7 +125,9 @@ pub fn run() {
             focus_window,
             close_window,
             launch_app,
-            set_autostart
+            set_autostart,
+            select_file,
+            extract_icon
         ])
         .run(tauri::generate_context!())
         .expect("Erro ao inicializar o VMedia Dock");

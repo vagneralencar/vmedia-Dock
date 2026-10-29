@@ -83,10 +83,63 @@ impl WindowsOSManager {
         Ok(())
     }
 
+    #[cfg(target_os = "windows")]
+    pub fn select_file(&self) -> Result<Option<String>, String> {
+        use std::process::Command;
+        // Abre o diálogo nativo do Windows via powershell COM OpenFileDialog
+        let script = r#"[System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms") | Out-Null; $f = New-Object System.Windows.Forms.OpenFileDialog; $f.Filter = "Executáveis (*.exe;*.lnk)|*.exe;*.lnk|Todos (*.*)|*.*"; if($f.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK){ Write-Output $f.FileName }"#;
+        
+        let output = Command::new("powershell")
+            .args(["-NoProfile", "-Command", script])
+            .output()
+            .map_err(|e| format!("Erro ao abrir seletor: {}", e))?;
+
+        let res = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        if res.is_empty() {
+            Ok(None)
+        } else {
+            Ok(Some(res))
+        }
+    }
+
     #[cfg(not(target_os = "windows"))]
-    pub fn set_autostart(&self, enable: bool) -> Result<(), String> {
-        log::info!("Simulando configuração de autostart: {}", enable);
-        Ok(())
+    pub fn select_file(&self) -> Result<Option<String>, String> {
+        Ok(Some("/usr/bin/code".to_string()))
+    }
+
+    #[cfg(target_os = "windows")]
+    pub fn extract_icon(&self, path: &str) -> Result<Option<String>, String> {
+        use windows::core::PCWSTR;
+        use windows::Win32::UI::Shell::ExtractIconExW;
+        use windows::Win32::UI::WindowsAndMessaging::{DestroyIcon, HICON};
+
+        let wide_path: Vec<u16> = path.encode_utf16().chain(std::iter::once(0)).collect();
+        let mut large_icon = HICON::default();
+        let mut small_icon = HICON::default();
+
+        unsafe {
+            let count = ExtractIconExW(
+                PCWSTR(wide_path.as_ptr()),
+                0,
+                Some(&mut large_icon),
+                Some(&mut small_icon),
+                1,
+            );
+
+            if count > 0 && !large_icon.is_invalid() {
+                let _ = DestroyIcon(large_icon);
+                if !small_icon.is_invalid() {
+                    let _ = DestroyIcon(small_icon);
+                }
+                return Ok(Some("extracted".to_string()));
+            }
+        }
+        Ok(None)
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    pub fn extract_icon(&self, _path: &str) -> Result<Option<String>, String> {
+        Ok(None)
     }
 }
 

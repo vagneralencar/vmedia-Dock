@@ -177,6 +177,32 @@ export const tauriService = {
     console.log(`[Autostart]: ${enable}`);
   },
 
+  async selectFile(): Promise<string | null> {
+    if (isTauri) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        return await invoke<string | null>('select_file');
+      } catch (err) {
+        console.error('Falha ao abrir seletor nativo:', err);
+      }
+    }
+    // Fallback para ambiente Web / Mock de desenvolvimento
+    const input = window.prompt('Informe o caminho do executável (.exe):', 'C:\\Program Files\\App\\app.exe');
+    return input || null;
+  },
+
+  async extractIcon(path: string): Promise<string | null> {
+    if (isTauri) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        return await invoke<string | null>('extract_icon', { path });
+      } catch (err) {
+        console.error('Falha ao extrair ícone:', err);
+      }
+    }
+    return null;
+  },
+
   async launchApp(path: string): Promise<string> {
     if (isTauri) {
       const { invoke } = await import('@tauri-apps/api/core');
