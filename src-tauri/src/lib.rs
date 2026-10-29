@@ -1,5 +1,6 @@
 mod ai_quota;
 mod config;
+mod media;
 mod os;
 mod security;
 mod system;
@@ -7,6 +8,7 @@ mod workspaces;
 
 use ai_quota::{AIQuotaCollector, AIQuotaInfo};
 use config::{AppConfig, ConfigService};
+use media::{MediaService, MediaTrackInfo};
 use os::windows::WindowsOSManager;
 use os::{OSManager, WindowInfo};
 use security::SecurityValidator;
@@ -101,8 +103,13 @@ fn extract_icon(path: String, state: State<AppState>) -> Result<Option<String>, 
 }
 
 #[tauri::command]
-fn get_ai_quotas() -> Vec<AIQuotaInfo> {
-    AIQuotaCollector::collect_all_quotas()
+fn get_media_track() -> MediaTrackInfo {
+    MediaService::get_current_track()
+}
+
+#[tauri::command]
+fn send_media_command(command: String) -> Result<(), String> {
+    MediaService::send_media_key(&command)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -121,6 +128,41 @@ pub fn run() {
                 .level(log::LevelFilter::Info)
                 .build(),
         )
+        .setup(|app| {
+            // Cria o System Tray nativo na barra de tarefas do Windows
+            use tauri::tray::TrayIconBuilder;
+            use tauri::menu::{Menu, MenuItem};
+            use tauri::Manager;
+
+            let show_item = MenuItem::with_id(app, "show", "Exibir / Ocultar Dock", true, None::<&str>)?;
+            let quit_item = MenuItem::with_id(app, "quit", "Sair do VMedia Dock", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
+
+            let _tray = TrayIconBuilder::new()
+                .menu(&menu)
+                .show_menu_on_left_click(true)
+                .on_menu_event(|app, event| match event.id.as_ref() {
+                    "show" => {
+                        if let Some(window) = app.get_webview_window("main") {
+                            if let Ok(visible) = window.is_visible() {
+                                if visible {
+                                    let _ = window.hide();
+                                } else {
+                                    let _ = window.show();
+                                    let _ = window.set_focus();
+                                }
+                            }
+                        }
+                    }
+                    "quit" => {
+                        app.exit(0);
+                    }
+                    _ => {}
+                })
+                .build(app)?;
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             get_system_metrics,
             get_workspaces,
@@ -135,7 +177,9 @@ pub fn run() {
             set_autostart,
             select_file,
             extract_icon,
-            get_ai_quotas
+            get_ai_quotas,
+            get_media_track,
+            send_media_command
         ])
         .run(tauri::generate_context!())
         .expect("Erro ao inicializar o VMedia Dock");

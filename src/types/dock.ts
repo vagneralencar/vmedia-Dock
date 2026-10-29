@@ -30,6 +30,13 @@ export interface AIProviderQuota {
   source?: string; // 'windows' | 'wsl' | 'auto'
 }
 
+export interface MediaTrackInfo {
+  title: string;
+  artist: string;
+  is_playing: boolean;
+  progress_percent: number;
+}
+
 export type WidgetSize = 'tile' | 'wide';
 
 export interface DockWidget {

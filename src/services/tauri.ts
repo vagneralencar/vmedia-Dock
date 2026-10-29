@@ -1,4 +1,4 @@
-import { Workspace, SystemMetrics, AppConfig, WindowInfo, AIProviderQuota } from '../types/dock';
+import { Workspace, SystemMetrics, AppConfig, WindowInfo, AIProviderQuota, MediaTrackInfo } from '../types/dock';
 
 const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
@@ -261,6 +261,36 @@ export const tauriService = {
         source: 'auto',
       },
     ];
+  },
+
+  async getMediaTrack(): Promise<MediaTrackInfo> {
+    if (isTauri) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        return await invoke<MediaTrackInfo>('get_media_track');
+      } catch (err) {
+        console.error('Falha ao obter mídia nativa:', err);
+      }
+    }
+
+    return {
+      title: 'Garota de Ipanema',
+      artist: 'Tom Jobim & Vinicius',
+      is_playing: true,
+      progress_percent: 45,
+    };
+  },
+
+  async sendMediaCommand(command: 'play_pause' | 'next' | 'prev'): Promise<void> {
+    if (isTauri) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        await invoke('send_media_command', { command });
+      } catch (err) {
+        console.error('Falha ao enviar comando de mídia:', err);
+      }
+    }
+    console.log(`[Media Command]: ${command}`);
   },
 
   async launchApp(path: string): Promise<string> {
