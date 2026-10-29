@@ -9,7 +9,7 @@ import { PomodoroWidget } from '../widgets/PomodoroWidget';
 import { DropZoneWidget } from '../widgets/DropZoneWidget';
 import { WeatherWidget } from '../widgets/WeatherWidget';
 import { GitHubWidget } from '../widgets/GitHubWidget';
-import { PetWidget } from '../widgets/PetWidget';
+import { TerminalWidget } from '../widgets/TerminalWidget';
 import { Sliders } from 'lucide-react';
 import { PinnedApp } from '../../types/dock';
 
@@ -50,7 +50,8 @@ export const DockBar: React.FC<DockBarProps> = ({
       case 'github':
         return <GitHubWidget key={id} />;
       case 'pet':
-        return <PetWidget key={id} />;
+      case 'terminal':
+        return <TerminalWidget key={id} />;
       default:
         return null;
     }

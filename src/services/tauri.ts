@@ -67,7 +67,7 @@ export const tauriService = {
           { id: 'terminal', name: 'Terminal', exec_path: 'wt.exe', icon_name: 'Terminal', is_running: false },
         ],
         widgets: [
-          { id: 'pet-1', widget_type: 'pet', size: 'tile', title: 'Mascote' },
+          { id: 'terminal-1', widget_type: 'terminal', size: 'tile', title: 'Mini Terminal' },
           { id: 'clock-1', widget_type: 'clock', size: 'tile', title: 'Relógio' },
           { id: 'sys-1', widget_type: 'system-stats', size: 'tile', title: 'Atividade' },
           { id: 'github-1', widget_type: 'github', size: 'wide', title: 'GitHub' },
@@ -84,7 +84,7 @@ export const tauriService = {
           { id: 'chat', name: 'Discord', exec_path: 'discord.exe', icon_name: 'MessageSquare', is_running: false },
         ],
         widgets: [
-          { id: 'pet-2', widget_type: 'pet', size: 'tile', title: 'Mascote' },
+          { id: 'terminal-2', widget_type: 'terminal', size: 'tile', title: 'Mini Terminal' },
           { id: 'weather-1', widget_type: 'weather', size: 'wide', title: 'Clima' },
           { id: 'media-1', widget_type: 'media-player', size: 'wide', title: 'Tocando Agora' },
           { id: 'drop-1', widget_type: 'drop-zone', size: 'tile', title: 'Prateleira' },

@@ -204,6 +204,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 
                 <div className="grid grid-cols-2 gap-2.5 pt-2">
                   {[
+                    { name: 'Mini Terminal', type: 'terminal', desc: 'Tela retrô com fluxo de código quando ocupado' },
                     { name: 'Relógio & Calendário', type: 'clock', desc: 'Horário e dia da semana vivo' },
                     { name: 'Monitor de Sistema', type: 'system-stats', desc: 'Uso de CPU e Memória RAM' },
                     { name: 'Tocando Agora', type: 'media-player', desc: 'Controle multimídia com capa' },

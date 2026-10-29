@@ -14,7 +14,8 @@ export type WidgetType =
   | 'drop-zone'
   | 'weather'
   | 'github'
-  | 'pet';
+  | 'pet'
+  | 'terminal';
 
 export type WidgetSize = 'tile' | 'wide';
 

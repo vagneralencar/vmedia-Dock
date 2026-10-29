@@ -58,6 +58,12 @@ impl Workspace {
                 ],
                 widgets: vec![
                     DockWidget {
+                        id: "terminal-1".to_string(),
+                        widget_type: "terminal".to_string(),
+                        size: "tile".to_string(),
+                        title: "Mini Terminal".to_string(),
+                    },
+                    DockWidget {
                         id: "clock-1".to_string(),
                         widget_type: "clock".to_string(),
                         size: "tile".to_string(),
@@ -111,6 +117,12 @@ impl Workspace {
                     },
                 ],
                 widgets: vec![
+                    DockWidget {
+                        id: "terminal-2".to_string(),
+                        widget_type: "terminal".to_string(),
+                        size: "tile".to_string(),
+                        title: "Mini Terminal".to_string(),
+                    },
                     DockWidget {
                         id: "weather-1".to_string(),
                         widget_type: "weather".to_string(),
