@@ -39,9 +39,53 @@ impl WindowsOSManager {
         Ok(())
     }
 
+    #[cfg(target_os = "windows")]
+    pub fn set_autostart(&self, enable: bool) -> Result<(), String> {
+        use std::env;
+        use std::process::Command;
+
+        let current_exe = env::current_exe().map_err(|e| format!("Erro ao obter executável: {}", e))?;
+        let exe_path = current_exe.to_string_lossy().to_string();
+
+        if enable {
+            // Adiciona na chave Run do usuário atual via reg.exe
+            let status = Command::new("reg")
+                .args([
+                    "add",
+                    r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run",
+                    "/v",
+                    "VMediaDock",
+                    "/t",
+                    "REG_SZ",
+                    "/d",
+                    &format!("\"{}\"", exe_path),
+                    "/f",
+                ])
+                .status()
+                .map_err(|e| format!("Erro ao registrar inicialização: {}", e))?;
+
+            if !status.success() {
+                return Err("Falha ao adicionar registro de autostart no Windows".to_string());
+            }
+        } else {
+            // Remove da chave Run se existir
+            let _ = Command::new("reg")
+                .args([
+                    "delete",
+                    r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run",
+                    "/v",
+                    "VMediaDock",
+                    "/f",
+                ])
+                .status();
+        }
+
+        Ok(())
+    }
+
     #[cfg(not(target_os = "windows"))]
-    pub fn close_window(&self, hwnd: isize) -> Result<(), String> {
-        log::info!("Simulando fechamento da janela: {}", hwnd);
+    pub fn set_autostart(&self, enable: bool) -> Result<(), String> {
+        log::info!("Simulando configuração de autostart: {}", enable);
         Ok(())
     }
 }

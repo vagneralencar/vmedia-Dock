@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Sun, CloudRain, CloudSun, Wind } from 'lucide-react';
+import { WeatherPopover } from './WeatherPopover';
 
 interface WeatherData {
   city: string;
@@ -9,6 +10,7 @@ interface WeatherData {
 }
 
 export const WeatherWidget: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const [data] = useState<WeatherData>({
     city: 'São Paulo',
     temperature: 24,
@@ -30,29 +32,42 @@ export const WeatherWidget: React.FC = () => {
   };
 
   return (
-    <div 
-      className="flex items-center gap-2 px-3 h-12 min-w-[130px] rounded-2xl bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/20 transition-all duration-200 cursor-pointer shadow-sm group select-none"
-      title={`Clima em ${data.city}: ${data.temperature}°C, Umidade: ${data.humidity}%`}
-    >
-      <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500/20 to-orange-400/20 border border-amber-300/20 shadow-inner flex-shrink-0">
-        {renderIcon()}
+    <div className="relative">
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center gap-2 px-3 h-12 min-w-[130px] rounded-2xl backdrop-blur-md border transition-all duration-200 cursor-pointer shadow-sm group select-none ${
+          isOpen ? 'bg-amber-500/20 border-amber-400/40' : 'bg-white/10 hover:bg-white/15 border-white/20'
+        }`}
+        title={`Clima em ${data.city}: ${data.temperature}°C, Umidade: ${data.humidity}%. Clique para previsão completa.`}
+      >
+        <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500/20 to-orange-400/20 border border-amber-300/20 shadow-inner flex-shrink-0">
+          {renderIcon()}
+        </div>
+
+        <div className="flex flex-col flex-grow min-w-0">
+          <div className="flex items-baseline gap-1">
+            <span className="text-sm font-bold text-white leading-none">
+              {data.temperature}°
+            </span>
+            <span className="text-[10px] text-white/70 font-medium truncate">
+              {data.city}
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-1 mt-0.5 text-white/50 text-[9px]">
+            <Wind className="w-2.5 h-2.5" />
+            <span>{data.humidity}% umid.</span>
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-col flex-grow min-w-0">
-        <div className="flex items-baseline gap-1">
-          <span className="text-sm font-bold text-white leading-none">
-            {data.temperature}°
-          </span>
-          <span className="text-[10px] text-white/70 font-medium truncate">
-            {data.city}
-          </span>
-        </div>
-        
-        <div className="flex items-center gap-1 mt-0.5 text-white/50 text-[9px]">
-          <Wind className="w-2.5 h-2.5" />
-          <span>{data.humidity}% umid.</span>
-        </div>
-      </div>
+      {isOpen && (
+        <WeatherPopover 
+          city={data.city} 
+          temperature={data.temperature} 
+          onClose={() => setIsOpen(false)} 
+        />
+      )}
     </div>
   );
 };

@@ -12,6 +12,7 @@ interface DockState {
   barPosition: 'bottom' | 'top';
   autoHide: boolean;
   iconSize: number; // 32 a 64 px
+  autostart: boolean;
   
   // Ações
   fetchWorkspaces: () => Promise<void>;
@@ -23,6 +24,7 @@ interface DockState {
   setBarPosition: (position: 'bottom' | 'top') => void;
   setIconSize: (size: number) => void;
   toggleAutoHide: () => void;
+  toggleAutostart: () => Promise<void>;
   removeAppFromWorkspace: (appId: string) => void;
   togglePinApp: (appId: string) => void;
   reorderApps: (startIndex: number, endIndex: number) => void;
@@ -40,6 +42,7 @@ export const useDockStore = create<DockState>((set, get) => ({
   barPosition: 'bottom',
   autoHide: false,
   iconSize: 48,
+  autostart: false,
 
   fetchWorkspaces: async () => {
     try {
@@ -50,6 +53,7 @@ export const useDockStore = create<DockState>((set, get) => ({
         barPosition: config.bar_position,
         autoHide: config.auto_hide,
         iconSize: config.icon_size || 48,
+        autostart: !!config.autostart,
         activeWorkspaceId: config.workspaces[0]?.id || 'work',
         isLoading: false 
       });
@@ -133,6 +137,22 @@ export const useDockStore = create<DockState>((set, get) => ({
       bar_position: state.barPosition,
       auto_hide: newAutoHide,
       icon_size: state.iconSize,
+      autostart: state.autostart,
+      workspaces: state.workspaces,
+    });
+  },
+
+  toggleAutostart: async () => {
+    const newAutostart = !get().autostart;
+    set({ autostart: newAutostart });
+    await tauriService.setAutostart(newAutostart);
+    const state = get();
+    tauriService.saveConfig({
+      theme: state.theme,
+      bar_position: state.barPosition,
+      auto_hide: state.autoHide,
+      icon_size: state.iconSize,
+      autostart: newAutostart,
       workspaces: state.workspaces,
     });
   },

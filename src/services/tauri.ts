@@ -165,6 +165,18 @@ export const tauriService = {
     console.log(`[Mock Close Window]: ${hwnd}`);
   },
 
+  async setAutostart(enable: boolean): Promise<void> {
+    if (isTauri) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        await invoke('set_autostart', { enable });
+      } catch (err) {
+        console.error('Falha ao definir autostart:', err);
+      }
+    }
+    console.log(`[Autostart]: ${enable}`);
+  },
+
   async launchApp(path: string): Promise<string> {
     if (isTauri) {
       const { invoke } = await import('@tauri-apps/api/core');

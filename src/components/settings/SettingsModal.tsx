@@ -28,7 +28,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     autoHide,
     toggleAutoHide,
     iconSize,
-    setIconSize 
+    setIconSize,
+    autostart,
+    toggleAutostart
   } = useDockStore();
 
   const [activeTab, setActiveTab] = useState<'appearance' | 'workspaces' | 'widgets' | 'security'>('appearance');
@@ -231,6 +233,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                       <span
                         className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
                           autoHide ? 'translate-x-4' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Toggle de Iniciar com o Windows (AutoStart) */}
+                  <div className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/10">
+                    <div>
+                      <div className="text-xs font-semibold text-white">Iniciar com o Windows</div>
+                      <div className="text-[11px] text-white/50">Inicia automaticamente junto com o sistema operacional</div>
+                    </div>
+                    <button
+                      onClick={toggleAutostart}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                        autostart ? 'bg-emerald-500' : 'bg-white/20'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                          autostart ? 'translate-x-4' : 'translate-x-1'
                         }`}
                       />
                     </button>
