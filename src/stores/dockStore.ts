@@ -25,8 +25,10 @@ interface DockState {
   setIconSize: (size: number) => void;
   toggleAutoHide: () => void;
   toggleAutostart: () => Promise<void>;
+  addAppToWorkspace: (app: { name: string; exec_path: string; icon_name: string }) => void;
   removeAppFromWorkspace: (appId: string) => void;
   togglePinApp: (appId: string) => void;
+  toggleWidget: (widgetType: string, title: string) => void;
   reorderApps: (startIndex: number, endIndex: number) => void;
   focusWindow: (hwnd: number) => Promise<void>;
   closeWindow: (hwnd: number) => Promise<void>;
@@ -157,6 +159,37 @@ export const useDockStore = create<DockState>((set, get) => ({
     });
   },
 
+  addAppToWorkspace: (newApp) => {
+    const { workspaces, activeWorkspaceId } = get();
+    const updated = workspaces.map((ws) => {
+      if (ws.id === activeWorkspaceId) {
+        const app = {
+          id: `app-${Date.now()}`,
+          name: newApp.name,
+          exec_path: newApp.exec_path,
+          icon_name: newApp.icon_name || 'Layers',
+          is_running: false,
+        };
+        return {
+          ...ws,
+          pinned_apps: [...ws.pinned_apps, app],
+        };
+      }
+      return ws;
+    });
+
+    set({ workspaces: updated });
+    const state = get();
+    tauriService.saveConfig({
+      theme: state.theme,
+      bar_position: state.barPosition,
+      auto_hide: state.autoHide,
+      icon_size: state.iconSize,
+      autostart: state.autostart,
+      workspaces: updated,
+    });
+  },
+
   removeAppFromWorkspace: (appId: string) => {
     const { workspaces, activeWorkspaceId } = get();
     const updated = workspaces.map((ws) => {
@@ -175,6 +208,42 @@ export const useDockStore = create<DockState>((set, get) => ({
       theme: state.theme,
       bar_position: state.barPosition,
       auto_hide: state.autoHide,
+      icon_size: state.iconSize,
+      autostart: state.autostart,
+      workspaces: updated,
+    });
+  },
+
+  toggleWidget: (widgetType, title) => {
+    const { workspaces, activeWorkspaceId } = get();
+    const updated = workspaces.map((ws) => {
+      if (ws.id === activeWorkspaceId) {
+        const exists = ws.widgets.some((w) => w.widget_type === widgetType);
+        const widgets = exists
+          ? ws.widgets.filter((w) => w.widget_type !== widgetType)
+          : [
+              ...ws.widgets,
+              {
+                id: `widget-${widgetType}-${Date.now()}`,
+                widget_type: widgetType as any,
+                size: (['github', 'weather', 'media-player'].includes(widgetType) ? 'wide' : 'tile') as any,
+                title,
+              },
+            ];
+
+        return { ...ws, widgets };
+      }
+      return ws;
+    });
+
+    set({ workspaces: updated });
+    const state = get();
+    tauriService.saveConfig({
+      theme: state.theme,
+      bar_position: state.barPosition,
+      auto_hide: state.autoHide,
+      icon_size: state.iconSize,
+      autostart: state.autostart,
       workspaces: updated,
     });
   },

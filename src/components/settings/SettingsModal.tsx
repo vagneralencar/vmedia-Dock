@@ -30,7 +30,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     iconSize,
     setIconSize,
     autostart,
-    toggleAutostart
+    toggleAutostart,
+    toggleWidget
   } = useDockStore();
 
   const [activeTab, setActiveTab] = useState<'appearance' | 'workspaces' | 'widgets' | 'security'>('appearance');
@@ -310,8 +311,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
             {activeTab === 'widgets' && (
               <div className="space-y-3">
-                <h3 className="text-sm font-semibold">Catálogo de Widgets</h3>
-                <p className="text-xs text-white/50">Widgets vivos disponíveis para o seu ambiente</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold">Catálogo de Widgets</h3>
+                    <p className="text-xs text-white/50">Ative ou desative widgets no seu ambiente atual</p>
+                  </div>
+                </div>
                 
                 <div className="grid grid-cols-2 gap-2.5 pt-2">
                   {[
@@ -323,12 +328,32 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                     { name: 'Prateleira de Arquivos', type: 'drop-zone', desc: 'Drop zone temporária' },
                     { name: 'Clima ao Vivo', type: 'weather', desc: 'Previsão e temperatura atual' },
                     { name: 'GitHub Contribuições', type: 'github', desc: 'Grade de commits e PRs' },
-                  ].map((w, idx) => (
-                    <div key={idx} className="p-3 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-all">
-                      <div className="text-xs font-bold text-white mb-0.5">{w.name}</div>
-                      <div className="text-[10px] text-white/50 leading-tight">{w.desc}</div>
-                    </div>
-                  ))}
+                  ].map((w, idx) => {
+                    const currentWs = workspaces.find((ws) => ws.id === activeWorkspaceId);
+                    const isEnabled = currentWs?.widgets.some((item) => item.widget_type === w.type);
+
+                    return (
+                      <div 
+                        key={idx} 
+                        onClick={() => toggleWidget(w.type, w.name)}
+                        className={`flex flex-col justify-between p-3 rounded-2xl border transition-all cursor-pointer ${
+                          isEnabled
+                            ? 'bg-blue-500/15 border-blue-400/40 shadow-sm'
+                            : 'bg-white/5 border-white/10 hover:bg-white/10'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-bold text-white">{w.name}</span>
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                            isEnabled ? 'bg-blue-500 text-white' : 'bg-white/10 text-white/50'
+                          }`}>
+                            {isEnabled ? 'Ativo' : 'Adicionar'}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-white/50 leading-tight">{w.desc}</div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
