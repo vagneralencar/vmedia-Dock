@@ -103,6 +103,11 @@ fn extract_icon(path: String, state: State<AppState>) -> Result<Option<String>, 
 }
 
 #[tauri::command]
+fn get_ai_quotas() -> Vec<AIQuotaInfo> {
+    AIQuotaCollector::collect_all_quotas()
+}
+
+#[tauri::command]
 fn get_media_track() -> MediaTrackInfo {
     MediaService::get_current_track()
 }

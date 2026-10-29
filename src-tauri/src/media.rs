@@ -69,21 +69,23 @@ impl MediaService {
     pub fn send_media_key(command: &str) -> Result<(), String> {
         #[cfg(target_os = "windows")]
         {
-            use windows::Win32::UI::WindowsAndMessaging::{
-                keybd_event, KEYEVENTF_KEYUP, VK_MEDIA_NEXT_TRACK, VK_MEDIA_PLAY_PAUSE, VK_MEDIA_PREV_TRACK,
-            };
-
-            let vk = match command {
-                "play_pause" => VK_MEDIA_PLAY_PAUSE.0 as u8,
-                "next" => VK_MEDIA_NEXT_TRACK.0 as u8,
-                "prev" => VK_MEDIA_PREV_TRACK.0 as u8,
+            // Código de tecla virtual: Play/Pause (0xB3 / 179), Next (0xB0 / 176), Prev (0xB1 / 177)
+            let vk: u8 = match command {
+                "play_pause" => 0xB3,
+                "next" => 0xB0,
+                "prev" => 0xB1,
                 _ => return Err("Comando de mídia desconhecido".to_string()),
             };
 
-            unsafe {
-                keybd_event(vk, 0, Default::default(), 0);
-                keybd_event(vk, 0, KEYEVENTF_KEYUP, 0);
-            }
+            // Envia evento de tecla nativo via powershell wscript.shell ou rotina leve
+            let ps_cmd = format!(
+                "$wshell = New-Object -ComObject WScript.Shell; $wshell.SendKeys([char]0x{:X})",
+                vk
+            );
+            let _ = std::process::Command::new("powershell")
+                .args(["-NoProfile", "-Command", &ps_cmd])
+                .spawn();
+
             return Ok(());
         }
 
