@@ -11,6 +11,7 @@ interface DockState {
   theme: 'glass' | 'neon' | 'dark';
   barPosition: 'bottom' | 'top';
   autoHide: boolean;
+  iconSize: number; // 32 a 64 px
   
   // Ações
   fetchWorkspaces: () => Promise<void>;
@@ -20,6 +21,7 @@ interface DockState {
   launchApp: (path: string) => Promise<void>;
   setTheme: (theme: 'glass' | 'neon' | 'dark') => void;
   setBarPosition: (position: 'bottom' | 'top') => void;
+  setIconSize: (size: number) => void;
   toggleAutoHide: () => void;
   removeAppFromWorkspace: (appId: string) => void;
   togglePinApp: (appId: string) => void;
@@ -37,6 +39,7 @@ export const useDockStore = create<DockState>((set, get) => ({
   theme: 'glass',
   barPosition: 'bottom',
   autoHide: false,
+  iconSize: 48,
 
   fetchWorkspaces: async () => {
     try {
@@ -46,6 +49,7 @@ export const useDockStore = create<DockState>((set, get) => ({
         theme: config.theme,
         barPosition: config.bar_position,
         autoHide: config.auto_hide,
+        iconSize: config.icon_size || 48,
         activeWorkspaceId: config.workspaces[0]?.id || 'work',
         isLoading: false 
       });
@@ -103,6 +107,19 @@ export const useDockStore = create<DockState>((set, get) => ({
       theme: state.theme,
       bar_position: barPosition,
       auto_hide: state.autoHide,
+      icon_size: state.iconSize,
+      workspaces: state.workspaces,
+    });
+  },
+
+  setIconSize: (iconSize) => {
+    set({ iconSize });
+    const state = get();
+    tauriService.saveConfig({
+      theme: state.theme,
+      bar_position: state.barPosition,
+      auto_hide: state.autoHide,
+      icon_size: iconSize,
       workspaces: state.workspaces,
     });
   },
@@ -115,6 +132,7 @@ export const useDockStore = create<DockState>((set, get) => ({
       theme: state.theme,
       bar_position: state.barPosition,
       auto_hide: newAutoHide,
+      icon_size: state.iconSize,
       workspaces: state.workspaces,
     });
   },

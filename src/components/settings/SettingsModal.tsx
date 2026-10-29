@@ -26,7 +26,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     barPosition,
     setBarPosition,
     autoHide,
-    toggleAutoHide 
+    toggleAutoHide,
+    iconSize,
+    setIconSize 
   } = useDockStore();
 
   const [activeTab, setActiveTab] = useState<'appearance' | 'workspaces' | 'widgets' | 'security'>('appearance');
@@ -140,6 +142,53 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 </div>
 
                 <div className="pt-4 border-t border-white/10 space-y-4">
+                  {/* Tamanho dos Ícones e Altura do Dock */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="text-sm font-semibold">Tamanho dos Ícones & Altura do Dock</h3>
+                      <span className="text-xs font-mono font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/20">
+                        {iconSize}px
+                      </span>
+                    </div>
+                    <p className="text-xs text-white/50 mb-3">Ajuste a escala da barra, ícones e widgets</p>
+
+                    {/* Predefinições de Tamanho */}
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      {[
+                        { label: 'Pequeno', size: 36 },
+                        { label: 'Médio', size: 48 },
+                        { label: 'Grande', size: 56 },
+                      ].map((preset) => (
+                        <button
+                          key={preset.size}
+                          onClick={() => setIconSize(preset.size)}
+                          className={`py-1.5 px-2 rounded-xl text-xs font-semibold transition-all ${
+                            iconSize === preset.size
+                              ? 'bg-blue-500/20 border border-blue-400/40 text-blue-300'
+                              : 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/10'
+                          }`}
+                        >
+                          {preset.label} ({preset.size}px)
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Slider Contínuo */}
+                    <div className="flex items-center gap-3 px-1">
+                      <span className="text-[10px] text-white/40">32px</span>
+                      <input
+                        type="range"
+                        min="32"
+                        max="64"
+                        step="2"
+                        value={iconSize}
+                        onChange={(e) => setIconSize(Number(e.target.value))}
+                        className="w-full h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                      />
+                      <span className="text-[10px] text-white/40">64px</span>
+                    </div>
+                  </div>
+
                   <div>
                     <h3 className="text-sm font-semibold mb-1">Posição na Tela</h3>
                     <p className="text-xs text-white/50 mb-3">Onde você prefere ancorar a barra</p>

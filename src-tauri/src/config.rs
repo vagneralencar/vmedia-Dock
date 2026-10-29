@@ -8,6 +8,7 @@ pub struct AppConfig {
     pub theme: String,
     pub auto_hide: bool,
     pub bar_position: String, // "bottom" ou "top"
+    pub icon_size: Option<u32>,
     pub workspaces: Vec<Workspace>,
 }
 
@@ -17,6 +18,7 @@ impl Default for AppConfig {
             theme: "glass".to_string(),
             auto_hide: false,
             bar_position: "bottom".to_string(),
+            icon_size: Some(48),
             workspaces: Workspace::default_workspaces(),
         }
     }

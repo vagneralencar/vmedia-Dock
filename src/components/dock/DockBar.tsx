@@ -28,6 +28,7 @@ export const DockBar: React.FC<DockBarProps> = ({
     workspaces, 
     activeWorkspaceId, 
     theme, 
+    iconSize,
     reorderApps,
     fetchOpenWindows 
   } = useDockStore();
@@ -118,7 +119,10 @@ export const DockBar: React.FC<DockBarProps> = ({
         <WorkspaceSwitcher />
 
         {/* Separador vertical */}
-        <div className="w-[1px] h-8 bg-white/15 my-auto" />
+        <div 
+          style={{ height: `${Math.round(iconSize * 0.65)}px` }} 
+          className="w-[1px] bg-white/15 my-auto" 
+        />
 
         {/* Lista de Aplicativos Fixados do Ambiente Atual */}
         <div className="flex items-center gap-2">
@@ -138,7 +142,10 @@ export const DockBar: React.FC<DockBarProps> = ({
 
         {/* Separador entre Apps e Widgets */}
         {currentWorkspace.widgets.length > 0 && (
-          <div className="w-[1px] h-8 bg-white/15 my-auto" />
+          <div 
+            style={{ height: `${Math.round(iconSize * 0.65)}px` }} 
+            className="w-[1px] bg-white/15 my-auto" 
+          />
         )}
 
         {/* Seção de Widgets Vivos */}
@@ -149,10 +156,17 @@ export const DockBar: React.FC<DockBarProps> = ({
         {/* Botão de Ajustes do Dock */}
         {onOpenSettings && (
           <>
-            <div className="w-[1px] h-8 bg-white/15 my-auto" />
+            <div 
+              style={{ height: `${Math.round(iconSize * 0.65)}px` }} 
+              className="w-[1px] bg-white/15 my-auto" 
+            />
             <button
               onClick={onOpenSettings}
-              className="flex items-center justify-center w-8 h-8 rounded-xl bg-white/5 hover:bg-white/15 text-white/50 hover:text-white transition-all cursor-pointer"
+              style={{
+                width: `${Math.max(28, Math.round(iconSize * 0.65))}px`,
+                height: `${Math.max(28, Math.round(iconSize * 0.65))}px`,
+              }}
+              className="flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/15 text-white/50 hover:text-white transition-all cursor-pointer"
               title="Ajustes do VMedia Dock"
             >
               <Sliders className="w-4 h-4" />

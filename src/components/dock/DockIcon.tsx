@@ -42,7 +42,7 @@ export const DockIcon: React.FC<DockIconProps> = ({
   onDragOver,
   onDrop,
 }) => {
-  const { launchApp, openWindows, focusWindow, closeWindow } = useDockStore();
+  const { launchApp, openWindows, focusWindow, closeWindow, iconSize } = useDockStore();
   const [isHovered, setIsHovered] = useState(false);
   const [isBouncing, setIsBouncing] = useState(false);
 
@@ -96,11 +96,21 @@ export const DockIcon: React.FC<DockIconProps> = ({
             onContextMenu(e, app);
           }
         }}
-        className={`relative flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-b from-white/20 to-white/5 hover:from-white/30 hover:to-white/10 backdrop-blur-md border border-white/25 shadow-md transition-all duration-200 active:scale-90 cursor-pointer ${
+        style={{
+          width: `${iconSize}px`,
+          height: `${iconSize}px`,
+        }}
+        className={`relative flex items-center justify-center rounded-2xl bg-gradient-to-b from-white/20 to-white/5 hover:from-white/30 hover:to-white/10 backdrop-blur-md border border-white/25 shadow-md transition-all duration-200 active:scale-90 cursor-pointer ${
           isBouncing ? 'animate-bounce' : 'hover:-translate-y-2 hover:scale-110'
         }`}
       >
-        <IconComponent className="w-6 h-6 text-white drop-shadow-sm transition-transform duration-200 group-hover:scale-105" />
+        <IconComponent 
+          style={{
+            width: `${Math.round(iconSize * 0.5)}px`,
+            height: `${Math.round(iconSize * 0.5)}px`,
+          }}
+          className="text-white drop-shadow-sm transition-transform duration-200 group-hover:scale-105" 
+        />
       </button>
 
       {/* Indicador de App em Execução */}

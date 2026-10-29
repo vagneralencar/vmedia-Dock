@@ -52,5 +52,6 @@ export interface AppConfig {
   theme: 'glass' | 'dark' | 'neon';
   auto_hide: boolean;
   bar_position: 'bottom' | 'top';
+  icon_size?: number; // Tamanho dos ícones e altura proporcional (32px a 64px)
   workspaces: Workspace[];
 }
