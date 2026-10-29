@@ -328,6 +328,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                     { name: 'Prateleira de Arquivos', type: 'drop-zone', desc: 'Drop zone temporária' },
                     { name: 'Clima ao Vivo', type: 'weather', desc: 'Previsão e temperatura atual' },
                     { name: 'GitHub Contribuições', type: 'github', desc: 'Grade de commits e PRs' },
+                    { name: 'Cotas de IA (CodexBar)', type: 'ai-quota', desc: 'Monitor de limites e resets de Claude, OpenAI, Cursor e Gemini' },
                   ].map((w, idx) => {
                     const currentWs = workspaces.find((ws) => ws.id === activeWorkspaceId);
                     const isEnabled = currentWs?.widgets.some((item) => item.widget_type === w.type);

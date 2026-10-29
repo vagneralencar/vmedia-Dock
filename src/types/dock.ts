@@ -15,7 +15,19 @@ export type WidgetType =
   | 'weather'
   | 'github'
   | 'pet'
-  | 'terminal';
+  | 'terminal'
+  | 'ai-quota';
+
+export interface AIProviderQuota {
+  id: string;
+  name: string;
+  used_requests: number;
+  total_requests: number;
+  used_percentage: number;
+  resets_in: string; // Ex: "4h 15m"
+  status: 'ok' | 'warning' | 'exceeded';
+  cost_estimate_usd?: number;
+}
 
 export type WidgetSize = 'tile' | 'wide';
 

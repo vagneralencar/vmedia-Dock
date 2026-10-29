@@ -71,6 +71,7 @@ export const tauriService = {
         ],
         widgets: [
           { id: 'terminal-1', widget_type: 'terminal', size: 'tile', title: 'Mini Terminal' },
+          { id: 'ai-1', widget_type: 'ai-quota', size: 'wide', title: 'Cotas de IA' },
           { id: 'clock-1', widget_type: 'clock', size: 'tile', title: 'Relógio' },
           { id: 'sys-1', widget_type: 'system-stats', size: 'tile', title: 'Atividade' },
           { id: 'github-1', widget_type: 'github', size: 'wide', title: 'GitHub' },

@@ -10,6 +10,7 @@ import { DropZoneWidget } from '../widgets/DropZoneWidget';
 import { WeatherWidget } from '../widgets/WeatherWidget';
 import { GitHubWidget } from '../widgets/GitHubWidget';
 import { TerminalWidget } from '../widgets/TerminalWidget';
+import { AIQuotaWidget } from '../widgets/AIQuotaWidget';
 import { Sliders } from 'lucide-react';
 import { PinnedApp } from '../../types/dock';
 
@@ -82,6 +83,8 @@ export const DockBar: React.FC<DockBarProps> = ({
       case 'pet':
       case 'terminal':
         return <TerminalWidget key={id} />;
+      case 'ai-quota':
+        return <AIQuotaWidget key={id} />;
       default:
         return null;
     }
