@@ -1,0 +1,39 @@
+export interface PinnedApp {
+  id: string;
+  name: string;
+  exec_path: string;
+  icon_name: string;
+  is_running: boolean;
+}
+
+export type WidgetType = 
+  | 'system-stats' 
+  | 'clock' 
+  | 'media-player' 
+  | 'pomodoro' 
+  | 'drop-zone'
+  | 'weather'
+  | 'github';
+export type WidgetSize = 'tile' | 'wide';
+
+export interface DockWidget {
+  id: string;
+  widget_type: WidgetType;
+  size: WidgetSize;
+  title: string;
+}
+
+export interface Workspace {
+  id: string;
+  name: string;
+  color: string;
+  pinned_apps: PinnedApp[];
+  widgets: DockWidget[];
+}
+
+export interface SystemMetrics {
+  cpu_usage: number;
+  memory_used_mb: number;
+  memory_total_mb: number;
+  memory_percentage: number;
+}
