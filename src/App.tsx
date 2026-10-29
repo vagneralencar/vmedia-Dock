@@ -18,8 +18,10 @@ export const App: React.FC = () => {
     isLoading 
   } = useDockStore();
 
+  // Todos os hooks chamados no topo incondicionalmente (React Rules of Hooks)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [contextMenuData, setContextMenuData] = useState<ContextMenuData>(null);
+  const [isBarHovered, setIsBarHovered] = useState(false);
 
   useEffect(() => {
     fetchWorkspaces();
@@ -71,12 +73,16 @@ export const App: React.FC = () => {
   };
 
   if (isLoading) {
-    return null;
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-transparent pointer-events-none">
+        <div className="px-4 py-2 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 text-white text-xs">
+          Carregando VMedia Dock...
+        </div>
+      </div>
+    );
   }
 
-  const [isBarHovered, setIsBarHovered] = useState(false);
   const isDockVisible = !autoHide || isBarHovered;
-
   const positionClass = barPosition === 'top' ? 'top-3' : 'bottom-3';
   const hideTransformClass = autoHide && !isDockVisible 
     ? (barPosition === 'top' ? '-translate-y-28 opacity-0 pointer-events-none' : 'translate-y-28 opacity-0 pointer-events-none') 
@@ -84,11 +90,11 @@ export const App: React.FC = () => {
 
   return (
     <>
-      {/* Sensor de Borda para Auto-Hide (Trigger invisível) */}
+      {/* Sensor de Borda para Auto-Hide (Trigger na borda da tela) */}
       {autoHide && (
         <div 
           onMouseEnter={() => setIsBarHovered(true)}
-          className={`fixed inset-x-0 ${barPosition === 'top' ? 'top-0' : 'bottom-0'} h-2 z-40 bg-transparent`}
+          className={`fixed inset-x-0 ${barPosition === 'top' ? 'top-0' : 'bottom-0'} h-4 z-40 bg-transparent`}
         />
       )}
 

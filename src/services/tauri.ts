@@ -14,10 +14,13 @@ export const tauriService = {
     }
 
     // Carrega do LocalStorage em ambiente Web de desenvolvimento
-    const saved = localStorage.getItem('vmedia_dock_config');
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('vmedia_dock_config') : null;
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed && Array.isArray(parsed.workspaces) && parsed.workspaces.length > 0) {
+          return parsed;
+        }
       } catch (e) {
         console.error('Erro ao ler do LocalStorage:', e);
       }
