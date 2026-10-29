@@ -49,19 +49,29 @@ export const useDockStore = create<DockState>((set, get) => ({
   fetchWorkspaces: async () => {
     try {
       const config = await tauriService.loadConfig();
+      const defaultWorkspaces = await tauriService.getWorkspaces();
+      const workspaces = (config && Array.isArray(config.workspaces) && config.workspaces.length > 0)
+        ? config.workspaces
+        : defaultWorkspaces;
+
       set({ 
-        workspaces: config.workspaces, 
-        theme: config.theme,
-        barPosition: config.bar_position,
-        autoHide: config.auto_hide,
-        iconSize: config.icon_size || 48,
-        autostart: !!config.autostart,
-        activeWorkspaceId: config.workspaces[0]?.id || 'work',
+        workspaces, 
+        theme: config?.theme || 'glass',
+        barPosition: config?.bar_position || 'bottom',
+        autoHide: !!config?.auto_hide,
+        iconSize: config?.icon_size || 48,
+        autostart: !!config?.autostart,
+        activeWorkspaceId: workspaces[0]?.id || 'work',
         isLoading: false 
       });
     } catch (err) {
       console.error('Erro ao carregar configurações:', err);
-      set({ isLoading: false });
+      const defaultWorkspaces = await tauriService.getWorkspaces();
+      set({ 
+        workspaces: defaultWorkspaces,
+        activeWorkspaceId: defaultWorkspaces[0]?.id || 'work',
+        isLoading: false 
+      });
     }
   },
 

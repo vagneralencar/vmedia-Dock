@@ -10,14 +10,49 @@ interface AIQuotaWidgetProps {
 export const AIQuotaWidget: React.FC<AIQuotaWidgetProps> = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeProviderIndex, setActiveProviderIndex] = useState(0);
-  const [providers, setProviders] = useState<AIProviderQuota[]>([]);
+  const [providers, setProviders] = useState<AIProviderQuota[]>([
+    {
+      id: 'claude',
+      name: 'Claude Code',
+      used_requests: 38,
+      total_requests: 50,
+      used_percentage: 76,
+      resets_in: '2h 45m',
+      status: 'warning',
+      cost_estimate_usd: 4.20,
+      source: 'auto',
+    },
+    {
+      id: 'cursor',
+      name: 'Cursor Pro',
+      used_requests: 485,
+      total_requests: 500,
+      used_percentage: 97,
+      resets_in: '42m',
+      status: 'exceeded',
+      cost_estimate_usd: 19.90,
+      source: 'auto',
+    },
+    {
+      id: 'openai',
+      name: 'OpenAI Codex',
+      used_requests: 120,
+      total_requests: 500,
+      used_percentage: 24,
+      resets_in: '1d 12h',
+      status: 'ok',
+      cost_estimate_usd: 1.85,
+      source: 'auto',
+    },
+  ]);
 
   // Carrega cotas detectadas (Windows + WSL)
   useEffect(() => {
+    let isMounted = true;
     const fetchQuotas = async () => {
       try {
         const data = await tauriService.getAIQuotas();
-        if (data && data.length > 0) {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
           setProviders(data);
         }
       } catch (err) {
@@ -26,20 +61,24 @@ export const AIQuotaWidget: React.FC<AIQuotaWidgetProps> = () => {
     };
 
     fetchQuotas();
-    const interval = setInterval(fetchQuotas, 30000); // Atualiza a cada 30 segundos
-    return () => clearInterval(interval);
+    const interval = setInterval(fetchQuotas, 30000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   // Alterna o provedor exibido no resumo do dock a cada 5 segundos
   useEffect(() => {
-    if (providers.length === 0) return;
+    if (providers.length <= 1) return;
     const timer = setInterval(() => {
       setActiveProviderIndex((prev) => (prev + 1) % providers.length);
     }, 5000);
     return () => clearInterval(timer);
   }, [providers.length]);
 
-  const active = providers[activeProviderIndex] ?? providers[0]!;
+  const active = providers[activeProviderIndex] || providers[0];
+  if (!active) return null;
 
   const getStatusColor = (status: AIProviderQuota['status']) => {
     switch (status) {
