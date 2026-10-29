@@ -138,6 +138,30 @@ export const tauriService = {
     }
   },
 
+  async focusWindow(hwnd: number): Promise<void> {
+    if (isTauri) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        await invoke('focus_window', { hwnd });
+      } catch (err) {
+        console.error('Falha ao focar janela:', err);
+      }
+    }
+    console.log(`[Mock Focus Window]: ${hwnd}`);
+  },
+
+  async closeWindow(hwnd: number): Promise<void> {
+    if (isTauri) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        await invoke('close_window', { hwnd });
+      } catch (err) {
+        console.error('Falha ao fechar janela:', err);
+      }
+    }
+    console.log(`[Mock Close Window]: ${hwnd}`);
+  },
+
   async launchApp(path: string): Promise<string> {
     if (isTauri) {
       const { invoke } = await import('@tauri-apps/api/core');

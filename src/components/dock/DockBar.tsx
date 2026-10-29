@@ -24,7 +24,36 @@ export const DockBar: React.FC<DockBarProps> = ({
   onAppContextMenu,
   onDockContextMenu,
 }) => {
-  const { workspaces, activeWorkspaceId, theme } = useDockStore();
+  const { 
+    workspaces, 
+    activeWorkspaceId, 
+    theme, 
+    reorderApps,
+    fetchOpenWindows 
+  } = useDockStore();
+
+  const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    fetchOpenWindows();
+    const interval = setInterval(fetchOpenWindows, 4000);
+    return () => clearInterval(interval);
+  }, [fetchOpenWindows]);
+
+  const handleDragStart = (_e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (_e: React.DragEvent, targetIndex: number) => {
+    if (draggedIndex !== null && draggedIndex !== targetIndex) {
+      reorderApps(draggedIndex, targetIndex);
+    }
+    setDraggedIndex(null);
+  };
 
   const currentWorkspace = workspaces.find((w) => w.id === activeWorkspaceId) || workspaces[0];
 
@@ -93,12 +122,16 @@ export const DockBar: React.FC<DockBarProps> = ({
 
         {/* Lista de Aplicativos Fixados do Ambiente Atual */}
         <div className="flex items-center gap-2">
-          {currentWorkspace.pinned_apps.map((app) => (
+          {currentWorkspace.pinned_apps.map((app, index) => (
             <DockIcon 
               key={app.id} 
               app={app} 
+              index={index}
               activeColor={currentWorkspace.color} 
               onContextMenu={onAppContextMenu}
+              onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
             />
           ))}
         </div>

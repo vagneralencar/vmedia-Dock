@@ -11,6 +11,7 @@ export const App: React.FC = () => {
     workspaces, 
     setActiveWorkspace, 
     barPosition,
+    autoHide,
     removeAppFromWorkspace,
     togglePinApp,
     launchApp,
@@ -73,11 +74,29 @@ export const App: React.FC = () => {
     return null;
   }
 
+  const [isBarHovered, setIsBarHovered] = useState(false);
+  const isDockVisible = !autoHide || isBarHovered;
+
   const positionClass = barPosition === 'top' ? 'top-3' : 'bottom-3';
+  const hideTransformClass = autoHide && !isDockVisible 
+    ? (barPosition === 'top' ? '-translate-y-28 opacity-0 pointer-events-none' : 'translate-y-28 opacity-0 pointer-events-none') 
+    : 'translate-y-0 opacity-100 pointer-events-auto';
 
   return (
     <>
-      <main className={`fixed inset-x-0 ${positionClass} flex items-center justify-center p-2 pointer-events-auto`}>
+      {/* Sensor de Borda para Auto-Hide (Trigger invisível) */}
+      {autoHide && (
+        <div 
+          onMouseEnter={() => setIsBarHovered(true)}
+          className={`fixed inset-x-0 ${barPosition === 'top' ? 'top-0' : 'bottom-0'} h-2 z-40 bg-transparent`}
+        />
+      )}
+
+      <main 
+        onMouseEnter={() => setIsBarHovered(true)}
+        onMouseLeave={() => setIsBarHovered(false)}
+        className={`fixed inset-x-0 ${positionClass} flex items-center justify-center p-2 transition-all duration-300 ease-out z-30 ${hideTransformClass}`}
+      >
         <DockBar 
           onOpenSettings={() => setIsSettingsOpen(true)}
           onAppContextMenu={handleAppContextMenu}

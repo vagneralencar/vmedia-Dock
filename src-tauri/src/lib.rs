@@ -53,6 +53,16 @@ fn unregister_app_bar(hwnd: isize, state: State<AppState>) -> Result<(), String>
 }
 
 #[tauri::command]
+fn focus_window(hwnd: isize, state: State<AppState>) -> Result<(), String> {
+    state.os_manager.focus_window(hwnd)
+}
+
+#[tauri::command]
+fn close_window(hwnd: isize, state: State<AppState>) -> Result<(), String> {
+    state.os_manager.close_window(hwnd)
+}
+
+#[tauri::command]
 fn launch_app(path: String) -> Result<String, String> {
     let safe_path = SecurityValidator::validate_executable_path(&path)?;
     
@@ -97,6 +107,8 @@ pub fn run() {
             list_open_windows,
             register_app_bar,
             unregister_app_bar,
+            focus_window,
+            close_window,
             launch_app
         ])
         .run(tauri::generate_context!())

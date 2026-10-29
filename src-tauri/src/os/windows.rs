@@ -6,6 +6,44 @@ impl WindowsOSManager {
     pub fn new() -> Self {
         Self
     }
+
+    #[cfg(target_os = "windows")]
+    pub fn focus_window(&self, hwnd: isize) -> Result<(), String> {
+        use windows::Win32::Foundation::HWND;
+        use windows::Win32::UI::WindowsAndMessaging::{SetForegroundWindow, ShowWindow, SW_RESTORE};
+
+        unsafe {
+            let hwnd_val = HWND(hwnd as _);
+            ShowWindow(hwnd_val, SW_RESTORE);
+            SetForegroundWindow(hwnd_val);
+        }
+        Ok(())
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    pub fn focus_window(&self, hwnd: isize) -> Result<(), String> {
+        log::info!("Simulando foco na janela: {}", hwnd);
+        Ok(())
+    }
+
+    #[cfg(target_os = "windows")]
+    pub fn close_window(&self, hwnd: isize) -> Result<(), String> {
+        use windows::Win32::Foundation::{HWND, LPARAM, WPARAM};
+        use windows::Win32::UI::WindowsAndMessaging::{PostMessageW, WM_CLOSE};
+
+        unsafe {
+            let hwnd_val = HWND(hwnd as _);
+            PostMessageW(hwnd_val, WM_CLOSE, WPARAM(0), LPARAM(0))
+                .map_err(|e| format!("Falha ao fechar janela: {}", e))?;
+        }
+        Ok(())
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    pub fn close_window(&self, hwnd: isize) -> Result<(), String> {
+        log::info!("Simulando fechamento da janela: {}", hwnd);
+        Ok(())
+    }
 }
 
 #[cfg(target_os = "windows")]
@@ -133,14 +171,20 @@ impl OSManager for WindowsOSManager {
         Ok(vec![
             WindowInfo {
                 id: 101,
-                title: "Google Chrome".to_string(),
+                title: "Google Chrome - Nova Guia".to_string(),
                 process_name: "chrome.exe".to_string(),
                 is_minimized: false,
             },
             WindowInfo {
                 id: 102,
-                title: "Visual Studio Code".to_string(),
+                title: "Visual Studio Code - vmedia-dock".to_string(),
                 process_name: "code.exe".to_string(),
+                is_minimized: false,
+            },
+            WindowInfo {
+                id: 103,
+                title: "Windows Terminal".to_string(),
+                process_name: "wt.exe".to_string(),
                 is_minimized: false,
             },
         ])

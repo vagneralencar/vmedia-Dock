@@ -22,7 +22,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     activeWorkspaceId, 
     setActiveWorkspace, 
     theme, 
-    setTheme 
+    setTheme,
+    barPosition,
+    setBarPosition,
+    autoHide,
+    toggleAutoHide 
   } = useDockStore();
 
   const [activeTab, setActiveTab] = useState<'appearance' | 'workspaces' | 'widgets' | 'security'>('appearance');
@@ -135,15 +139,51 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-white/10">
-                  <h3 className="text-sm font-semibold mb-1">Posição na Tela</h3>
-                  <p className="text-xs text-white/50 mb-3">Onde você prefere ancorar a barra</p>
-                  <div className="flex gap-2">
-                    <button className="flex-grow py-2 px-3 rounded-xl bg-blue-500/20 border border-blue-400/40 text-xs font-semibold text-blue-300">
-                      Inferior (Padrão)
-                    </button>
-                    <button className="flex-grow py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-white/60 hover:bg-white/10">
-                      Superior
+                <div className="pt-4 border-t border-white/10 space-y-4">
+                  <div>
+                    <h3 className="text-sm font-semibold mb-1">Posição na Tela</h3>
+                    <p className="text-xs text-white/50 mb-3">Onde você prefere ancorar a barra</p>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setBarPosition('bottom')}
+                        className={`flex-grow py-2 px-3 rounded-xl text-xs font-semibold transition-all ${
+                          barPosition === 'bottom'
+                            ? 'bg-blue-500/20 border border-blue-400/40 text-blue-300'
+                            : 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/10'
+                        }`}
+                      >
+                        Inferior (Padrão)
+                      </button>
+                      <button 
+                        onClick={() => setBarPosition('top')}
+                        className={`flex-grow py-2 px-3 rounded-xl text-xs font-semibold transition-all ${
+                          barPosition === 'top'
+                            ? 'bg-blue-500/20 border border-blue-400/40 text-blue-300'
+                            : 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/10'
+                        }`}
+                      >
+                        Superior
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Toggle de Auto-Hide */}
+                  <div className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/10">
+                    <div>
+                      <div className="text-xs font-semibold text-white">Ocultar Automaticamente (Auto-Hide)</div>
+                      <div className="text-[11px] text-white/50">Recolhe a barra e reaparece ao encostar na borda</div>
+                    </div>
+                    <button
+                      onClick={toggleAutoHide}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                        autoHide ? 'bg-blue-500' : 'bg-white/20'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                          autoHide ? 'translate-x-4' : 'translate-x-1'
+                        }`}
+                      />
                     </button>
                   </div>
                 </div>

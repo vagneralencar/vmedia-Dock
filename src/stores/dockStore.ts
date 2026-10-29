@@ -23,6 +23,9 @@ interface DockState {
   toggleAutoHide: () => void;
   removeAppFromWorkspace: (appId: string) => void;
   togglePinApp: (appId: string) => void;
+  reorderApps: (startIndex: number, endIndex: number) => void;
+  focusWindow: (hwnd: number) => Promise<void>;
+  closeWindow: (hwnd: number) => Promise<void>;
 }
 
 export const useDockStore = create<DockState>((set, get) => ({
@@ -160,5 +163,50 @@ export const useDockStore = create<DockState>((set, get) => ({
       auto_hide: state.autoHide,
       workspaces: updated,
     });
+  },
+
+  reorderApps: (startIndex: number, endIndex: number) => {
+    const { workspaces, activeWorkspaceId } = get();
+    const updated = workspaces.map((ws) => {
+      if (ws.id === activeWorkspaceId) {
+        const apps = [...ws.pinned_apps];
+        const [removed] = apps.splice(startIndex, 1);
+        if (removed) {
+          apps.splice(endIndex, 0, removed);
+        }
+        return {
+          ...ws,
+          pinned_apps: apps,
+        };
+      }
+      return ws;
+    });
+
+    set({ workspaces: updated });
+    const state = get();
+    tauriService.saveConfig({
+      theme: state.theme,
+      bar_position: state.barPosition,
+      auto_hide: state.autoHide,
+      workspaces: updated,
+    });
+  },
+
+  focusWindow: async (hwnd: number) => {
+    try {
+      await tauriService.focusWindow(hwnd);
+    } catch (err) {
+      console.error('Erro ao focar janela:', err);
+    }
+  },
+
+  closeWindow: async (hwnd: number) => {
+    try {
+      await tauriService.closeWindow(hwnd);
+      // Atualiza a lista após fechar
+      await get().fetchOpenWindows();
+    } catch (err) {
+      console.error('Erro ao fechar janela:', err);
+    }
   },
 }));
