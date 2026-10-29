@@ -156,8 +156,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                     <p className="text-xs text-white/50 mb-3">Ajuste a escala da barra, ícones e widgets</p>
 
                     {/* Predefinições de Tamanho */}
-                    <div className="grid grid-cols-3 gap-2 mb-3">
+                    <div className="grid grid-cols-4 gap-2 mb-3">
                       {[
+                        { label: 'Mini', size: 24 },
                         { label: 'Pequeno', size: 36 },
                         { label: 'Médio', size: 48 },
                         { label: 'Grande', size: 56 },
@@ -176,12 +177,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                       ))}
                     </div>
 
-                    {/* Slider Contínuo */}
+                    {/* Slider Contínuo de 20px a 64px */}
                     <div className="flex items-center gap-3 px-1">
-                      <span className="text-[10px] text-white/40">32px</span>
+                      <span className="text-[10px] text-white/40">20px</span>
                       <input
                         type="range"
-                        min="32"
+                        min="20"
                         max="64"
                         step="2"
                         value={iconSize}
