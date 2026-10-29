@@ -13,7 +13,9 @@ export type WidgetType =
   | 'pomodoro' 
   | 'drop-zone'
   | 'weather'
-  | 'github';
+  | 'github'
+  | 'pet';
+
 export type WidgetSize = 'tile' | 'wide';
 
 export interface DockWidget {
@@ -36,4 +38,18 @@ export interface SystemMetrics {
   memory_used_mb: number;
   memory_total_mb: number;
   memory_percentage: number;
+}
+
+export interface WindowInfo {
+  id: number;
+  title: string;
+  process_name: string;
+  is_minimized: boolean;
+}
+
+export interface AppConfig {
+  theme: 'glass' | 'dark' | 'neon';
+  auto_hide: boolean;
+  bar_position: 'bottom' | 'top';
+  workspaces: Workspace[];
 }

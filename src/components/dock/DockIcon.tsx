@@ -26,9 +26,10 @@ const iconMap: Record<string, LucideIcon> = {
 interface DockIconProps {
   app: PinnedApp;
   activeColor: string;
+  onContextMenu?: (e: React.MouseEvent, app: PinnedApp) => void;
 }
 
-export const DockIcon: React.FC<DockIconProps> = ({ app, activeColor }) => {
+export const DockIcon: React.FC<DockIconProps> = ({ app, activeColor, onContextMenu }) => {
   const { launchApp } = useDockStore();
   const [isHovered, setIsHovered] = useState(false);
   const [isBouncing, setIsBouncing] = useState(false);
@@ -57,6 +58,12 @@ export const DockIcon: React.FC<DockIconProps> = ({ app, activeColor }) => {
       {/* Botão do Ícone com Magnification Zoom */}
       <button
         onClick={handleClick}
+        onContextMenu={(e) => {
+          if (onContextMenu) {
+            e.preventDefault();
+            onContextMenu(e, app);
+          }
+        }}
         className={`relative flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-b from-white/20 to-white/5 hover:from-white/30 hover:to-white/10 backdrop-blur-md border border-white/25 shadow-md transition-all duration-200 active:scale-90 cursor-pointer ${
           isBouncing ? 'animate-bounce' : 'hover:-translate-y-2 hover:scale-110'
         }`}

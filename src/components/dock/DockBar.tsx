@@ -9,13 +9,21 @@ import { PomodoroWidget } from '../widgets/PomodoroWidget';
 import { DropZoneWidget } from '../widgets/DropZoneWidget';
 import { WeatherWidget } from '../widgets/WeatherWidget';
 import { GitHubWidget } from '../widgets/GitHubWidget';
+import { PetWidget } from '../widgets/PetWidget';
 import { Sliders } from 'lucide-react';
+import { PinnedApp } from '../../types/dock';
 
 interface DockBarProps {
   onOpenSettings?: () => void;
+  onAppContextMenu?: (e: React.MouseEvent, app: PinnedApp) => void;
+  onDockContextMenu?: (e: React.MouseEvent) => void;
 }
 
-export const DockBar: React.FC<DockBarProps> = ({ onOpenSettings }) => {
+export const DockBar: React.FC<DockBarProps> = ({ 
+  onOpenSettings,
+  onAppContextMenu,
+  onDockContextMenu,
+}) => {
   const { workspaces, activeWorkspaceId, theme } = useDockStore();
 
   const currentWorkspace = workspaces.find((w) => w.id === activeWorkspaceId) || workspaces[0];
@@ -41,6 +49,8 @@ export const DockBar: React.FC<DockBarProps> = ({ onOpenSettings }) => {
         return <WeatherWidget key={id} />;
       case 'github':
         return <GitHubWidget key={id} />;
+      case 'pet':
+        return <PetWidget key={id} />;
       default:
         return null;
     }
@@ -59,7 +69,15 @@ export const DockBar: React.FC<DockBarProps> = ({ onOpenSettings }) => {
   };
 
   return (
-    <div className="flex items-center justify-center w-full select-none">
+    <div 
+      className="flex items-center justify-center w-full select-none"
+      onContextMenu={(e) => {
+        if (onDockContextMenu) {
+          e.preventDefault();
+          onDockContextMenu(e);
+        }
+      }}
+    >
       <div 
         className={`flex items-center gap-2.5 px-4 py-2 rounded-3xl border transition-all duration-300 hover:border-white/30 ${getThemeClass()}`}
         style={{
@@ -79,6 +97,7 @@ export const DockBar: React.FC<DockBarProps> = ({ onOpenSettings }) => {
               key={app.id} 
               app={app} 
               activeColor={currentWorkspace.color} 
+              onContextMenu={onAppContextMenu}
             />
           ))}
         </div>

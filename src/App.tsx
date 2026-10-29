@@ -2,10 +2,23 @@ import React, { useEffect, useState } from 'react';
 import { useDockStore } from './stores/dockStore';
 import { DockBar } from './components/dock/DockBar';
 import { SettingsModal } from './components/settings/SettingsModal';
+import { ContextMenu, ContextMenuData } from './components/dock/ContextMenu';
+import { PinnedApp } from './types/dock';
 
 export const App: React.FC = () => {
-  const { fetchWorkspaces, workspaces, setActiveWorkspace, isLoading } = useDockStore();
+  const { 
+    fetchWorkspaces, 
+    workspaces, 
+    setActiveWorkspace, 
+    barPosition,
+    removeAppFromWorkspace,
+    togglePinApp,
+    launchApp,
+    isLoading 
+  } = useDockStore();
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [contextMenuData, setContextMenuData] = useState<ContextMenuData>(null);
 
   useEffect(() => {
     fetchWorkspaces();
@@ -37,15 +50,50 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [workspaces, setActiveWorkspace]);
 
+  const handleAppContextMenu = (e: React.MouseEvent, app: PinnedApp) => {
+    e.preventDefault();
+    setContextMenuData({
+      type: 'app',
+      app,
+      x: e.clientX,
+      y: e.clientY,
+    });
+  };
+
+  const handleDockContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenuData({
+      type: 'dock',
+      x: e.clientX,
+      y: e.clientY,
+    });
+  };
+
   if (isLoading) {
     return null;
   }
 
+  const positionClass = barPosition === 'top' ? 'top-3' : 'bottom-3';
+
   return (
     <>
-      <main className="fixed inset-x-0 bottom-3 flex items-center justify-center p-2 pointer-events-auto">
-        <DockBar onOpenSettings={() => setIsSettingsOpen(true)} />
+      <main className={`fixed inset-x-0 ${positionClass} flex items-center justify-center p-2 pointer-events-auto`}>
+        <DockBar 
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onAppContextMenu={handleAppContextMenu}
+          onDockContextMenu={handleDockContextMenu}
+        />
       </main>
+
+      {/* Menu de Contexto Flutuante */}
+      <ContextMenu
+        data={contextMenuData}
+        onClose={() => setContextMenuData(null)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        onTogglePinApp={togglePinApp}
+        onRemoveApp={removeAppFromWorkspace}
+        onLaunchApp={launchApp}
+      />
 
       {/* Modal de Ajustes */}
       <SettingsModal 
