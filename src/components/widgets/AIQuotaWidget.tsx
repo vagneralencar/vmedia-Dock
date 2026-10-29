@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Cpu, RefreshCw, AlertTriangle } from 'lucide-react';
 import { AIProviderQuota } from '../../types/dock';
+import { tauriService } from '../../services/tauri';
 
 interface AIQuotaWidgetProps {
   onOpenFlyout?: () => void;
@@ -9,53 +10,29 @@ interface AIQuotaWidgetProps {
 export const AIQuotaWidget: React.FC<AIQuotaWidgetProps> = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeProviderIndex, setActiveProviderIndex] = useState(0);
+  const [providers, setProviders] = useState<AIProviderQuota[]>([]);
 
-  // Providers suportados estilo CodexBar
-  const [providers] = useState<AIProviderQuota[]>([
-    {
-      id: 'claude',
-      name: 'Claude Code',
-      used_requests: 38,
-      total_requests: 50,
-      used_percentage: 76,
-      resets_in: '2h 45m',
-      status: 'warning',
-      cost_estimate_usd: 4.20,
-    },
-    {
-      id: 'openai',
-      name: 'OpenAI Codex',
-      used_requests: 120,
-      total_requests: 500,
-      used_percentage: 24,
-      resets_in: '1d 12h',
-      status: 'ok',
-      cost_estimate_usd: 1.85,
-    },
-    {
-      id: 'cursor',
-      name: 'Cursor Pro',
-      used_requests: 485,
-      total_requests: 500,
-      used_percentage: 97,
-      resets_in: '42m',
-      status: 'exceeded',
-      cost_estimate_usd: 19.90,
-    },
-    {
-      id: 'gemini',
-      name: 'Gemini 1.5 Pro',
-      used_requests: 14,
-      total_requests: 100,
-      used_percentage: 14,
-      resets_in: '5h 10m',
-      status: 'ok',
-      cost_estimate_usd: 0.45,
-    },
-  ]);
+  // Carrega cotas detectadas (Windows + WSL)
+  useEffect(() => {
+    const fetchQuotas = async () => {
+      try {
+        const data = await tauriService.getAIQuotas();
+        if (data && data.length > 0) {
+          setProviders(data);
+        }
+      } catch (err) {
+        console.error('Erro ao buscar cotas de IA:', err);
+      }
+    };
+
+    fetchQuotas();
+    const interval = setInterval(fetchQuotas, 30000); // Atualiza a cada 30 segundos
+    return () => clearInterval(interval);
+  }, []);
 
   // Alterna o provedor exibido no resumo do dock a cada 5 segundos
   useEffect(() => {
+    if (providers.length === 0) return;
     const timer = setInterval(() => {
       setActiveProviderIndex((prev) => (prev + 1) % providers.length);
     }, 5000);

@@ -27,6 +27,7 @@ export interface AIProviderQuota {
   resets_in: string; // Ex: "4h 15m"
   status: 'ok' | 'warning' | 'exceeded';
   cost_estimate_usd?: number;
+  source?: string; // 'windows' | 'wsl' | 'auto'
 }
 
 export type WidgetSize = 'tile' | 'wide';

@@ -1,9 +1,11 @@
+mod ai_quota;
 mod config;
 mod os;
 mod security;
 mod system;
 mod workspaces;
 
+use ai_quota::{AIQuotaCollector, AIQuotaInfo};
 use config::{AppConfig, ConfigService};
 use os::windows::WindowsOSManager;
 use os::{OSManager, WindowInfo};
@@ -98,6 +100,11 @@ fn extract_icon(path: String, state: State<AppState>) -> Result<Option<String>, 
     state.os_manager.extract_icon(&path)
 }
 
+#[tauri::command]
+fn get_ai_quotas() -> Vec<AIQuotaInfo> {
+    AIQuotaCollector::collect_all_quotas()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let metrics_service = MetricsService::new();
@@ -127,7 +134,8 @@ pub fn run() {
             launch_app,
             set_autostart,
             select_file,
-            extract_icon
+            extract_icon,
+            get_ai_quotas
         ])
         .run(tauri::generate_context!())
         .expect("Erro ao inicializar o VMedia Dock");

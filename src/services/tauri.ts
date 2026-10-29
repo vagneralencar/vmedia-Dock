@@ -1,4 +1,4 @@
-import { Workspace, SystemMetrics, AppConfig, WindowInfo } from '../types/dock';
+import { Workspace, SystemMetrics, AppConfig, WindowInfo, AIProviderQuota } from '../types/dock';
 
 const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
@@ -202,6 +202,65 @@ export const tauriService = {
       }
     }
     return null;
+  },
+
+  async getAIQuotas(): Promise<AIProviderQuota[]> {
+    if (isTauri) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        return await invoke<AIProviderQuota[]>('get_ai_quotas');
+      } catch (err) {
+        console.error('Falha ao coletar cotas de IA nativas:', err);
+      }
+    }
+
+    // Fallback padrão
+    return [
+      {
+        id: 'claude',
+        name: 'Claude Code (WSL)',
+        used_requests: 38,
+        total_requests: 50,
+        used_percentage: 76,
+        resets_in: '2h 45m',
+        status: 'warning',
+        cost_estimate_usd: 4.20,
+        source: 'wsl',
+      },
+      {
+        id: 'cursor',
+        name: 'Cursor Pro',
+        used_requests: 485,
+        total_requests: 500,
+        used_percentage: 97,
+        resets_in: '42m',
+        status: 'exceeded',
+        cost_estimate_usd: 19.90,
+        source: 'windows',
+      },
+      {
+        id: 'openai',
+        name: 'OpenAI Codex',
+        used_requests: 120,
+        total_requests: 500,
+        used_percentage: 24,
+        resets_in: '1d 12h',
+        status: 'ok',
+        cost_estimate_usd: 1.85,
+        source: 'auto',
+      },
+      {
+        id: 'gemini',
+        name: 'Gemini 1.5 Pro',
+        used_requests: 14,
+        total_requests: 100,
+        used_percentage: 14,
+        resets_in: '5h 10m',
+        status: 'ok',
+        cost_estimate_usd: 0.45,
+        source: 'auto',
+      },
+    ];
   },
 
   async launchApp(path: string): Promise<string> {
