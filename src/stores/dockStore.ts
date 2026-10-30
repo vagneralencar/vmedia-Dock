@@ -102,6 +102,11 @@ export const useDockStore = create<DockState>((set, get) => ({
 
   updateMetrics: async () => {
     try {
+      // Se houver um jogo ou app em tela cheia, suspende as consultas para poupar 100% de CPU
+      const isFullscreen = await tauriService.checkFullscreenApp();
+      if (isFullscreen) {
+        return;
+      }
       const metrics = await tauriService.getSystemMetrics();
       set({ metrics });
     } catch (err) {

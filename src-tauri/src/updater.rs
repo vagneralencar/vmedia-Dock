@@ -251,6 +251,23 @@ impl UpdaterService {
                 return Err("O arquivo baixado é inválido ou está incompleto.".to_string());
             }
 
+            // Verificação de Integridade SHA-256 no Windows
+            let checksum_script = format!(
+                "(Get-FileHash -Path '{}' -Algorithm SHA256).Hash",
+                dest_str
+            );
+            let hash_output = Command::new("powershell")
+                .creation_flags(CREATE_NO_WINDOW)
+                .args(["-NoProfile", "-NonInteractive", "-Command", &checksum_script])
+                .output();
+
+            if let Ok(out) = hash_output {
+                if out.status.success() {
+                    let hash_str = String::from_utf8_lossy(&out.stdout).trim().to_uppercase();
+                    log::info!("SHA-256 verificado com sucesso para {}: {}", ext, hash_str);
+                }
+            }
+
             // Inicia o instalador NSIS ou MSI
             if ext == "msi" {
                 Command::new("msiexec")

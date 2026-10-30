@@ -97,6 +97,18 @@ export const tauriService = {
     ];
   },
 
+  async checkFullscreenApp(): Promise<boolean> {
+    if (isTauri) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        return await invoke<boolean>('check_fullscreen_app');
+      } catch (err) {
+        console.error('Falha ao verificar app em tela cheia:', err);
+      }
+    }
+    return false;
+  },
+
   async getSystemMetrics(): Promise<SystemMetrics> {
     if (isTauri) {
       try {

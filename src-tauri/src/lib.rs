@@ -29,6 +29,11 @@ fn get_system_metrics(state: State<AppState>) -> Result<SystemMetrics, String> {
 }
 
 #[tauri::command]
+fn check_fullscreen_app(state: State<AppState>) -> bool {
+    state.os_manager.is_fullscreen()
+}
+
+#[tauri::command]
 fn get_workspaces() -> Vec<Workspace> {
     ConfigService::load().workspaces
 }
@@ -511,6 +516,7 @@ pub fn run() {
             position_dock_window,
             check_for_updates,
             install_update,
+            check_fullscreen_app,
             get_github_contributions
         ])
         .run(tauri::generate_context!())

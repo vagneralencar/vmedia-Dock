@@ -11,6 +11,7 @@ import { WeatherWidget } from '../widgets/WeatherWidget';
 import { GitHubWidget } from '../widgets/GitHubWidget';
 import { TerminalWidget } from '../widgets/TerminalWidget';
 import { AIQuotaWidget } from '../widgets/AIQuotaWidget';
+import { ClipboardWidget } from '../widgets/ClipboardWidget';
 import { Sliders, GripVertical } from 'lucide-react';
 import { PinnedApp } from '../../types/dock';
 import { tauriService } from '../../services/tauri';
@@ -95,6 +96,8 @@ export const DockBar: React.FC<DockBarProps> = ({
         return <TerminalWidget key={id} />;
       case 'ai-quota':
         return <AIQuotaWidget key={id} />;
+      case 'clipboard':
+        return <ClipboardWidget key={id} />;
       default:
         return null;
     }

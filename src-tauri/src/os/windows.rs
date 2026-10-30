@@ -145,6 +145,10 @@ impl WindowsOSManager {
 
 #[cfg(target_os = "windows")]
 impl OSManager for WindowsOSManager {
+    fn is_fullscreen(&self) -> bool {
+        self.is_foreground_fullscreen()
+    }
+
     fn register_app_bar(&self, hwnd: isize, position: &str, height: i32) -> Result<(), String> {
         use windows::Win32::Foundation::{HWND, RECT};
         use windows::Win32::UI::Shell::{
@@ -251,6 +255,31 @@ impl OSManager for WindowsOSManager {
         }
 
         Ok(windows_list)
+    }
+
+    #[cfg(target_os = "windows")]
+    pub fn is_foreground_fullscreen(&self) -> bool {
+        use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowRect, GetDesktopWindow};
+        use windows::Win32::Foundation::RECT;
+
+        unsafe {
+            let fg_hwnd = GetForegroundWindow();
+            if fg_hwnd.is_invalid() {
+                return false;
+            }
+            let desktop_hwnd = GetDesktopWindow();
+            let mut fg_rect = RECT::default();
+            let mut desk_rect = RECT::default();
+
+            if GetWindowRect(fg_hwnd, &mut fg_rect).is_ok() && GetWindowRect(desktop_hwnd, &mut desk_rect).is_ok() {
+                let is_fullscreen = fg_rect.left <= desk_rect.left
+                    && fg_rect.top <= desk_rect.top
+                    && fg_rect.right >= desk_rect.right
+                    && fg_rect.bottom >= desk_rect.bottom;
+                return is_fullscreen;
+            }
+        }
+        false
     }
 }
 

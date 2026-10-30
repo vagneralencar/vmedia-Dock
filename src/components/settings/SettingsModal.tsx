@@ -432,6 +432,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     { name: 'Prateleira de Arquivos', type: 'drop-zone', desc: 'Drop zone temporária' },
                     { name: 'Clima ao Vivo', type: 'weather', desc: 'Previsão e temperatura atual' },
                     { name: 'GitHub Contribuições', type: 'github', desc: 'Grade de commits e PRs ao vivo do seu perfil' },
+                    { name: 'Área de Transferência', type: 'clipboard', desc: 'Histórico recente e seguro de textos copiados' },
                     { name: 'Cotas de IA (CodexBar)', type: 'ai-quota', desc: 'Monitor de limites e resets de Claude, OpenAI, Cursor e Gemini' },
                   ].map((w, idx) => {
                     const currentWs = workspaces.find((ws) => ws.id === activeWorkspaceId);

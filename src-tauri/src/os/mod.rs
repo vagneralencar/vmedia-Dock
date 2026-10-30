@@ -15,4 +15,5 @@ pub trait OSManager {
     fn register_app_bar(&self, hwnd: isize, position: &str, height: i32) -> Result<(), String>;
     fn unregister_app_bar(&self, hwnd: isize) -> Result<(), String>;
     fn list_open_windows(&self) -> Result<Vec<WindowInfo>, String>;
+    fn is_fullscreen(&self) -> bool { false }
 }

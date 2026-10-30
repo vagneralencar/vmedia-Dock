@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDockStore } from './stores/dockStore';
 import { DockBar } from './components/dock/DockBar';
 import { SettingsModal } from './components/settings/SettingsModal';
+import { CommandPalette } from './components/dock/CommandPalette';
 import { ContextMenu, ContextMenuData } from './components/dock/ContextMenu';
 import { PinnedApp } from './types/dock';
 import { tauriService } from './services/tauri';
@@ -21,6 +22,7 @@ export const App: React.FC = () => {
 
   // Todos os hooks chamados no topo incondicionalmente (React Rules of Hooks)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [contextMenuData, setContextMenuData] = useState<ContextMenuData>(null);
   const [isBarHovered, setIsBarHovered] = useState(false);
 
@@ -65,6 +67,12 @@ export const App: React.FC = () => {
             e.preventDefault();
             setActiveWorkspace(targetWs.id);
           }
+        }
+
+        // Ctrl + Alt + P ou Alt + Espaço para abrir o Command Palette rápido
+        if (e.key.toLowerCase() === 'p' || (e.altKey && e.code === 'Space')) {
+          e.preventDefault();
+          setIsPaletteOpen(prev => !prev);
         }
 
         // Ctrl + Alt + S para abrir Ajustes
@@ -157,6 +165,13 @@ export const App: React.FC = () => {
           onDockContextMenu={handleDockContextMenu}
         />
       </main>
+
+      {/* Command Palette Rápido (Spotlight) */}
+      <CommandPalette 
+        isOpen={isPaletteOpen}
+        onClose={() => setIsPaletteOpen(false)}
+        onOpenSettings={openSettings}
+      />
 
       {/* Menu de Contexto Flutuante */}
       <ContextMenu

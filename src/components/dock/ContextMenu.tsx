@@ -87,6 +87,18 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
           <button
             onClick={() => {
+              // Copia o caminho do executável para a área de transferência
+              navigator.clipboard.writeText(data.app.exec_path);
+              onClose();
+            }}
+            className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-xl hover:bg-white/10 text-white/90 hover:text-white transition-colors"
+          >
+            <span className="text-sky-400 text-xs font-mono">📋</span>
+            <span>Copiar caminho</span>
+          </button>
+
+          <button
+            onClick={() => {
               onTogglePinApp(data.app.id);
               onClose();
             }}

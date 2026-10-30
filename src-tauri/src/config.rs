@@ -14,6 +14,7 @@ pub struct AppConfig {
     pub github_username: Option<String>,
     pub weather_city: Option<String>,
     pub pomodoro_minutes: Option<u32>,
+    pub pause_in_fullscreen: Option<bool>,
     pub workspaces: Vec<Workspace>,
 }
 
@@ -29,6 +30,7 @@ impl Default for AppConfig {
             github_username: Some("vagneralencar".to_string()),
             weather_city: Some("São Paulo".to_string()),
             pomodoro_minutes: Some(25),
+            pause_in_fullscreen: Some(true),
             workspaces: Workspace::default_workspaces(),
         }
     }

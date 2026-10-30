@@ -16,7 +16,8 @@ export type WidgetType =
   | 'github'
   | 'pet'
   | 'terminal'
-  | 'ai-quota';
+  | 'ai-quota'
+  | 'clipboard';
 
 export interface AIProviderQuota {
   id: string;
@@ -103,5 +104,6 @@ export interface AppConfig {
   github_username?: string; // Usuário GitHub para o widget de contribuições
   weather_city?: string; // Cidade para o widget de clima
   pomodoro_minutes?: number; // Minutos de foco para o pomodoro (padrão: 25)
+  pause_in_fullscreen?: boolean; // Pausar animações e métricas se houver app em tela cheia
   workspaces: Workspace[];
 }
