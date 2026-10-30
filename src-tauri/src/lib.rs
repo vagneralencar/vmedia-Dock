@@ -398,7 +398,7 @@ fn position_dock_window(
             let work_area = monitor.work_area();
             let win_size = window
                 .outer_size()
-                .unwrap_or(tauri::PhysicalSize { width: 960, height: 96 });
+                .unwrap_or(tauri::PhysicalSize { width: 960, height: 180 });
             let pos_choice = position.as_deref().unwrap_or("bottom");
 
             let x = work_area.position.x + ((work_area.size.width as i32 - win_size.width as i32) / 2);

@@ -246,7 +246,7 @@ impl OSManager for WindowsOSManager {
     fn list_open_windows(&self) -> Result<Vec<WindowInfo>, String> {
         use windows::Win32::Foundation::{BOOL, HWND, LPARAM};
         use windows::Win32::UI::WindowsAndMessaging::{
-            EnumWindows, GetWindowTextLengthW, GetWindowTextW, IsWindowVisible,
+            EnumWindows, GetWindowTextLengthW, GetWindowTextW, IsWindowVisible, GetWindowThreadProcessId,
         };
 
         let mut windows_list: Vec<WindowInfo> = Vec::new();
@@ -262,12 +262,15 @@ impl OSManager for WindowsOSManager {
                         GetWindowTextW(hwnd, &mut buf);
                         let title = String::from_utf16_lossy(&buf[..len as usize]);
 
+                        let mut pid: u32 = 0;
+                        GetWindowThreadProcessId(hwnd, Some(&mut pid));
+
                         // Filtra janelas de sistema ou vazias
-                        if !title.is_empty() && title != "Program Manager" && title != "VMedia Dock" {
+                        if !title.is_empty() && title != "Program Manager" && title != "VMedia Dock" && title != "Settings" {
                             list.push(WindowInfo {
                                 id: hwnd.0 as u64,
                                 title,
-                                process_name: "App".to_string(),
+                                process_name: format!("pid:{}", pid),
                                 is_minimized: false,
                             });
                         }

@@ -19,7 +19,7 @@ export const WindowPeekCard: React.FC<WindowPeekCardProps> = ({
 
   return (
     <div 
-      className="absolute -top-24 flex flex-col w-52 p-2.5 rounded-2xl bg-neutral-900/90 backdrop-blur-2xl border border-white/20 shadow-2xl text-white select-none animate-fade-in z-50 pointer-events-auto"
+      className="absolute bottom-full mb-3 flex flex-col w-52 p-2.5 rounded-2xl bg-neutral-900/95 backdrop-blur-2xl border border-white/20 shadow-2xl text-white select-none animate-fade-in z-50 pointer-events-auto"
       onClick={(e) => e.stopPropagation()}
     >
       {/* Barra de título da janela em miniatura */}
