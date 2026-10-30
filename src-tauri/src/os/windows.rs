@@ -218,23 +218,25 @@ impl OSManager for WindowsOSManager {
         let mut windows_list: Vec<WindowInfo> = Vec::new();
 
         unsafe extern "system" fn enum_window_proc(hwnd: HWND, lparam: LPARAM) -> BOOL {
-            let list = &mut *(lparam.0 as *mut Vec<WindowInfo>);
-            
-            if IsWindowVisible(hwnd).as_bool() {
-                let len = GetWindowTextLengthW(hwnd);
-                if len > 0 {
-                    let mut buf = vec![0u16; (len + 1) as usize];
-                    GetWindowTextW(hwnd, &mut buf);
-                    let title = String::from_utf16_lossy(&buf[..len as usize]);
+            unsafe {
+                let list = &mut *(lparam.0 as *mut Vec<WindowInfo>);
+                
+                if IsWindowVisible(hwnd).as_bool() {
+                    let len = GetWindowTextLengthW(hwnd);
+                    if len > 0 {
+                        let mut buf = vec![0u16; (len + 1) as usize];
+                        GetWindowTextW(hwnd, &mut buf);
+                        let title = String::from_utf16_lossy(&buf[..len as usize]);
 
-                    // Filtra janelas de sistema ou vazias
-                    if !title.is_empty() && title != "Program Manager" && title != "VMedia Dock" {
-                        list.push(WindowInfo {
-                            id: hwnd.0 as u64,
-                            title,
-                            process_name: "App".to_string(),
-                            is_minimized: false,
-                        });
+                        // Filtra janelas de sistema ou vazias
+                        if !title.is_empty() && title != "Program Manager" && title != "VMedia Dock" {
+                            list.push(WindowInfo {
+                                id: hwnd.0 as u64,
+                                title,
+                                process_name: "App".to_string(),
+                                is_minimized: false,
+                            });
+                        }
                     }
                 }
             }

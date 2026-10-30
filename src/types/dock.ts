@@ -68,11 +68,40 @@ export interface WindowInfo {
   is_minimized: boolean;
 }
 
+export interface MonitorInfo {
+  index: number;
+  name: string;
+  width: number;
+  height: number;
+  is_current: boolean;
+}
+
+export interface UpdateInfo {
+  current_version: string;
+  latest_version: string;
+  has_update: boolean;
+  release_notes: string;
+  download_url?: string;
+  asset_name?: string;
+  published_at?: string;
+  repo: string;
+}
+
+export interface GitHubContributionsData {
+  total_contributions: number;
+  weeks: number[][]; // matriz [coluna][linha] de níveis 0..4
+  username: string;
+}
+
 export interface AppConfig {
   theme: 'glass' | 'dark' | 'neon';
   auto_hide: boolean;
   bar_position: 'bottom' | 'top';
   icon_size?: number; // Tamanho dos ícones e altura proporcional (32px a 64px)
   autostart?: boolean; // Iniciar automaticamente com o Windows
+  update_repo?: string; // Repositório GitHub (ex: vagneralencar/vmedia-dock)
+  github_username?: string; // Usuário GitHub para o widget de contribuições
+  weather_city?: string; // Cidade para o widget de clima
+  pomodoro_minutes?: number; // Minutos de foco para o pomodoro (padrão: 25)
   workspaces: Workspace[];
 }

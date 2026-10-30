@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Timer, Play, Pause, RotateCcw } from 'lucide-react';
+import { useDockStore } from '../../stores/dockStore';
 
 export const PomodoroWidget: React.FC = () => {
-  const [secondsLeft, setSecondsLeft] = useState(25 * 60);
+  const { pomodoroMinutes } = useDockStore();
+  const defaultSeconds = (pomodoroMinutes || 25) * 60;
+  const [secondsLeft, setSecondsLeft] = useState(defaultSeconds);
   const [isActive, setIsActive] = useState(false);
+
+  useEffect(() => {
+    if (!isActive) {
+      setSecondsLeft((pomodoroMinutes || 25) * 60);
+    }
+  }, [pomodoroMinutes, isActive]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -29,7 +38,7 @@ export const PomodoroWidget: React.FC = () => {
   const reset = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsActive(false);
-    setSecondsLeft(25 * 60);
+    setSecondsLeft(defaultSeconds);
   };
 
   return (

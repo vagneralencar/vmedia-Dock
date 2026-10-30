@@ -11,8 +11,9 @@ import { WeatherWidget } from '../widgets/WeatherWidget';
 import { GitHubWidget } from '../widgets/GitHubWidget';
 import { TerminalWidget } from '../widgets/TerminalWidget';
 import { AIQuotaWidget } from '../widgets/AIQuotaWidget';
-import { Sliders } from 'lucide-react';
+import { Sliders, GripVertical } from 'lucide-react';
 import { PinnedApp } from '../../types/dock';
+import { tauriService } from '../../services/tauri';
 
 interface DockBarProps {
   onOpenSettings?: () => void;
@@ -30,6 +31,8 @@ export const DockBar: React.FC<DockBarProps> = ({
     activeWorkspaceId, 
     theme, 
     iconSize,
+    updateInfo,
+    checkForUpdates,
     reorderApps,
     fetchOpenWindows 
   } = useDockStore();
@@ -41,6 +44,13 @@ export const DockBar: React.FC<DockBarProps> = ({
     const interval = setInterval(fetchOpenWindows, 4000);
     return () => clearInterval(interval);
   }, [fetchOpenWindows]);
+
+  React.useEffect(() => {
+    // Checa discretamente atualizações no boot e a cada 4 horas
+    checkForUpdates();
+    const updateInterval = setInterval(checkForUpdates, 4 * 60 * 60 * 1000);
+    return () => clearInterval(updateInterval);
+  }, [checkForUpdates]);
 
   const handleDragStart = (_e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
@@ -113,6 +123,12 @@ export const DockBar: React.FC<DockBarProps> = ({
       }}
     >
       <div 
+        onMouseDown={(e) => {
+          // Permite arrastar o dock clicando diretamente no fundo da barra (fora de botões)
+          if (e.button === 0 && e.target === e.currentTarget) {
+            tauriService.startDragWindow();
+          }
+        }}
         className={`flex items-center gap-2.5 px-4 py-2 rounded-3xl border transition-all duration-300 hover:border-white/30 ${getThemeClass()}`}
         style={{
           boxShadow: `0 20px 40px -15px rgba(0, 0, 0, 0.7), 0 0 25px -5px ${currentWorkspace.color}33`,
@@ -169,13 +185,35 @@ export const DockBar: React.FC<DockBarProps> = ({
                 width: `${Math.max(28, Math.round(iconSize * 0.65))}px`,
                 height: `${Math.max(28, Math.round(iconSize * 0.65))}px`,
               }}
-              className="flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/15 text-white/50 hover:text-white transition-all cursor-pointer"
+              className="relative flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/15 text-white/50 hover:text-white transition-all cursor-pointer"
               title="Ajustes do VMedia Dock"
             >
               <Sliders className="w-4 h-4" />
+              {updateInfo?.has_update && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-cyan-400 rounded-full border-2 border-neutral-900 animate-pulse" />
+              )}
             </button>
           </>
         )}
+
+        {/* Alça para arrastar a janela do Dock entre monitores / telas */}
+        <div 
+          data-tauri-drag-region
+          onMouseDown={(e) => {
+            if (e.button === 0) {
+              e.preventDefault();
+              e.stopPropagation();
+              tauriService.startDragWindow();
+            }
+          }}
+          style={{
+            height: `${Math.max(28, Math.round(iconSize * 0.65))}px`,
+          }}
+          className="flex items-center justify-center px-1.5 rounded-lg hover:bg-white/15 text-white/40 hover:text-white cursor-grab active:cursor-grabbing transition-colors"
+          title="Clique e segure para arrastar o Dock para outro local ou monitor"
+        >
+          <GripVertical className="w-4 h-4 pointer-events-none" />
+        </div>
       </div>
     </div>
   );

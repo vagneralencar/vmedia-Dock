@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Workspace, SystemMetrics, WindowInfo } from '../types/dock';
+import { Workspace, SystemMetrics, WindowInfo, UpdateInfo } from '../types/dock';
 import { tauriService } from '../services/tauri';
 
 interface DockState {
@@ -13,6 +13,12 @@ interface DockState {
   autoHide: boolean;
   iconSize: number; // 32 a 64 px
   autostart: boolean;
+  updateRepo: string;
+  updateInfo: UpdateInfo | null;
+  isCheckingUpdate: boolean;
+  githubUsername: string;
+  weatherCity: string;
+  pomodoroMinutes: number;
   
   // Ações
   fetchWorkspaces: () => Promise<void>;
@@ -25,6 +31,11 @@ interface DockState {
   setIconSize: (size: number) => void;
   toggleAutoHide: () => void;
   toggleAutostart: () => Promise<void>;
+  setUpdateRepo: (repo: string) => void;
+  setGithubUsername: (username: string) => void;
+  setWeatherCity: (city: string) => void;
+  setPomodoroMinutes: (minutes: number) => void;
+  checkForUpdates: () => Promise<UpdateInfo | null>;
   addAppToWorkspace: (app: { name: string; exec_path: string; icon_name: string }) => void;
   removeAppFromWorkspace: (appId: string) => void;
   togglePinApp: (appId: string) => void;
@@ -45,6 +56,12 @@ export const useDockStore = create<DockState>((set, get) => ({
   autoHide: false,
   iconSize: 48,
   autostart: false,
+  updateRepo: 'vagneralencar/vmedia-dock',
+  updateInfo: null,
+  isCheckingUpdate: false,
+  githubUsername: 'vagneralencar',
+  weatherCity: 'São Paulo',
+  pomodoroMinutes: 25,
 
   fetchWorkspaces: async () => {
     try {
@@ -61,6 +78,10 @@ export const useDockStore = create<DockState>((set, get) => ({
         autoHide: !!config?.auto_hide,
         iconSize: config?.icon_size || 48,
         autostart: !!config?.autostart,
+        updateRepo: config?.update_repo || 'vagneralencar/vmedia-dock',
+        githubUsername: config?.github_username || 'vagneralencar',
+        weatherCity: config?.weather_city || 'São Paulo',
+        pomodoroMinutes: config?.pomodoro_minutes || 25,
         activeWorkspaceId: workspaces[0]?.id || 'work',
         isLoading: false 
       });
@@ -112,6 +133,8 @@ export const useDockStore = create<DockState>((set, get) => ({
       theme,
       bar_position: state.barPosition,
       auto_hide: state.autoHide,
+      icon_size: state.iconSize,
+      autostart: state.autostart,
       workspaces: state.workspaces,
     });
   },
@@ -124,8 +147,10 @@ export const useDockStore = create<DockState>((set, get) => ({
       bar_position: barPosition,
       auto_hide: state.autoHide,
       icon_size: state.iconSize,
+      autostart: state.autostart,
       workspaces: state.workspaces,
     });
+    tauriService.positionDockWindow(barPosition);
   },
 
   setIconSize: (iconSize) => {
@@ -136,6 +161,7 @@ export const useDockStore = create<DockState>((set, get) => ({
       bar_position: state.barPosition,
       auto_hide: state.autoHide,
       icon_size: iconSize,
+      autostart: state.autostart,
       workspaces: state.workspaces,
     });
   },
@@ -165,8 +191,89 @@ export const useDockStore = create<DockState>((set, get) => ({
       auto_hide: state.autoHide,
       icon_size: state.iconSize,
       autostart: newAutostart,
+      update_repo: state.updateRepo,
       workspaces: state.workspaces,
     });
+  },
+
+  setUpdateRepo: (repo: string) => {
+    set({ updateRepo: repo });
+    const state = get();
+    tauriService.saveConfig({
+      theme: state.theme,
+      bar_position: state.barPosition,
+      auto_hide: state.autoHide,
+      icon_size: state.iconSize,
+      autostart: state.autostart,
+      update_repo: repo,
+      github_username: state.githubUsername,
+      workspaces: state.workspaces,
+    });
+  },
+
+  setGithubUsername: (username: string) => {
+    set({ githubUsername: username });
+    const state = get();
+    tauriService.saveConfig({
+      theme: state.theme,
+      bar_position: state.barPosition,
+      auto_hide: state.autoHide,
+      icon_size: state.iconSize,
+      autostart: state.autostart,
+      update_repo: state.updateRepo,
+      github_username: username,
+      weather_city: state.weatherCity,
+      pomodoro_minutes: state.pomodoroMinutes,
+      workspaces: state.workspaces,
+    });
+  },
+
+  setWeatherCity: (city: string) => {
+    set({ weatherCity: city });
+    const state = get();
+    tauriService.saveConfig({
+      theme: state.theme,
+      bar_position: state.barPosition,
+      auto_hide: state.autoHide,
+      icon_size: state.iconSize,
+      autostart: state.autostart,
+      update_repo: state.updateRepo,
+      github_username: state.githubUsername,
+      weather_city: city,
+      pomodoro_minutes: state.pomodoroMinutes,
+      workspaces: state.workspaces,
+    });
+  },
+
+  setPomodoroMinutes: (minutes: number) => {
+    set({ pomodoroMinutes: minutes });
+    const state = get();
+    tauriService.saveConfig({
+      theme: state.theme,
+      bar_position: state.barPosition,
+      auto_hide: state.autoHide,
+      icon_size: state.iconSize,
+      autostart: state.autostart,
+      update_repo: state.updateRepo,
+      github_username: state.githubUsername,
+      weather_city: state.weatherCity,
+      pomodoro_minutes: minutes,
+      workspaces: state.workspaces,
+    });
+  },
+
+  checkForUpdates: async () => {
+    const { updateRepo } = get();
+    set({ isCheckingUpdate: true });
+    try {
+      const info = await tauriService.checkForUpdates(updateRepo);
+      set({ updateInfo: info, isCheckingUpdate: false });
+      return info;
+    } catch (err) {
+      console.error('Erro na checagem de atualizações:', err);
+      set({ isCheckingUpdate: false });
+      return null;
+    }
   },
 
   addAppToWorkspace: (newApp) => {

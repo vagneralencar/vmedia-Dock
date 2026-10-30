@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDockStore } from '../../stores/dockStore';
+import { tauriService } from '../../services/tauri';
+import { MonitorInfo } from '../../types/dock';
 import { 
   X, 
   Palette, 
@@ -8,15 +10,25 @@ import {
   ShieldCheck, 
   Sliders, 
   Plus, 
-  Check 
+  Check,
+  Monitor,
+  RefreshCw,
+  Download,
+  AlertCircle,
+  ExternalLink
 } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  isStandaloneWindow?: boolean;
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ 
+  isOpen, 
+  onClose,
+  isStandaloneWindow = false,
+}) => {
   const { 
     workspaces, 
     activeWorkspaceId, 
@@ -31,10 +43,41 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     setIconSize,
     autostart,
     toggleAutostart,
+    updateRepo,
+    setUpdateRepo,
+    updateInfo,
+    isCheckingUpdate,
+    checkForUpdates,
+    githubUsername,
+    setGithubUsername,
+    weatherCity,
+    setWeatherCity,
+    pomodoroMinutes,
+    setPomodoroMinutes,
     toggleWidget
   } = useDockStore();
 
-  const [activeTab, setActiveTab] = useState<'appearance' | 'workspaces' | 'widgets' | 'security'>('appearance');
+  const [activeTab, setActiveTab] = useState<'appearance' | 'workspaces' | 'widgets' | 'security' | 'updates'>('appearance');
+  const [monitors, setMonitors] = useState<MonitorInfo[]>([]);
+  const [selectedMonitorIdx, setSelectedMonitorIdx] = useState<number>(0);
+  const [isInstalling, setIsInstalling] = useState(false);
+  const [updateError, setUpdateError] = useState<string | null>(null);
+  const [tempRepo, setTempRepo] = useState(updateRepo);
+  const [tempUser, setTempUser] = useState(githubUsername);
+  const [tempCity, setTempCity] = useState(weatherCity);
+  const [tempPomodoro, setTempPomodoro] = useState(pomodoroMinutes);
+
+  useEffect(() => {
+    if (isOpen) {
+      tauriService.listMonitors().then((list) => {
+        setMonitors(list);
+        const current = list.find((m) => m.is_current);
+        if (current) {
+          setSelectedMonitorIdx(current.index);
+        }
+      });
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -44,10 +87,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     { id: 'neon', name: 'Cyber Neon', desc: 'Bordas luminosas com brilho vibrante e gradientes' },
   ] as const;
 
+  const outerClass = isStandaloneWindow
+    ? 'w-screen h-screen bg-neutral-900 flex flex-col overflow-hidden text-white select-none'
+    : 'fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-neutral-950/80 backdrop-blur-md animate-fade-in';
+
+  const innerClass = isStandaloneWindow
+    ? 'flex flex-col w-full h-full bg-neutral-900 overflow-hidden text-white select-none'
+    : 'flex flex-col w-full h-full max-w-4xl max-h-[600px] rounded-2xl bg-neutral-900 border border-white/20 shadow-2xl overflow-hidden backdrop-blur-2xl text-white select-none';
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
+    <div className={outerClass}>
       <div 
-        className="flex flex-col w-full max-w-2xl h-[520px] rounded-3xl bg-neutral-900/90 border border-white/20 shadow-2xl overflow-hidden backdrop-blur-2xl text-white select-none"
+        className={innerClass}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Cabeçalho */}
@@ -108,6 +159,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             >
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
               <span>Segurança</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('updates')}
+              className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+                activeTab === 'updates' ? 'bg-white/15 text-white shadow-sm' : 'text-white/60 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <RefreshCw className="w-4 h-4 text-cyan-400" />
+                <span>Atualizações</span>
+              </div>
+              {updateInfo?.has_update && (
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+              )}
             </button>
           </div>
 
@@ -195,10 +260,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
                   <div>
                     <h3 className="text-sm font-semibold mb-1">Posição na Tela</h3>
-                    <p className="text-xs text-white/50 mb-3">Onde você prefere ancorar a barra</p>
+                    <p className="text-xs text-white/50 mb-3">Onde você prefere ancorar a barra (sempre acima da barra de tarefas do Windows)</p>
                     <div className="flex gap-2">
                       <button 
-                        onClick={() => setBarPosition('bottom')}
+                        onClick={() => {
+                          setBarPosition('bottom');
+                          tauriService.positionDockWindow('bottom', selectedMonitorIdx);
+                        }}
                         className={`flex-grow py-2 px-3 rounded-xl text-xs font-semibold transition-all ${
                           barPosition === 'bottom'
                             ? 'bg-blue-500/20 border border-blue-400/40 text-blue-300'
@@ -208,7 +276,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                         Inferior (Padrão)
                       </button>
                       <button 
-                        onClick={() => setBarPosition('top')}
+                        onClick={() => {
+                          setBarPosition('top');
+                          tauriService.positionDockWindow('top', selectedMonitorIdx);
+                        }}
                         className={`flex-grow py-2 px-3 rounded-xl text-xs font-semibold transition-all ${
                           barPosition === 'top'
                             ? 'bg-blue-500/20 border border-blue-400/40 text-blue-300'
@@ -219,6 +290,38 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                       </button>
                     </div>
                   </div>
+
+                  {/* Seletor de Monitor / Tela */}
+                  {monitors.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold mb-1">Monitor / Tela do Dock</h3>
+                      <p className="text-xs text-white/50 mb-3">
+                        Mova o Dock para outro monitor com 1 clique ou arraste pela alça lateral na barra
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {monitors.map((m) => (
+                          <button
+                            key={m.index}
+                            onClick={() => {
+                              setSelectedMonitorIdx(m.index);
+                              tauriService.positionDockWindow(barPosition, m.index);
+                            }}
+                            className={`flex items-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold transition-all ${
+                              selectedMonitorIdx === m.index
+                                ? 'bg-blue-500/20 border border-blue-400/40 text-blue-300'
+                                : 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/10'
+                            }`}
+                          >
+                            <Monitor className="w-4 h-4 shrink-0" />
+                            <div className="text-left truncate">
+                              <div>{m.name}</div>
+                              <div className="text-[10px] opacity-60">{m.width}x{m.height}</div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Toggle de Auto-Hide */}
                   <div className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/10">
@@ -328,7 +431,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                     { name: 'Pomodoro', type: 'pomodoro', desc: 'Timer para ciclos de foco' },
                     { name: 'Prateleira de Arquivos', type: 'drop-zone', desc: 'Drop zone temporária' },
                     { name: 'Clima ao Vivo', type: 'weather', desc: 'Previsão e temperatura atual' },
-                    { name: 'GitHub Contribuições', type: 'github', desc: 'Grade de commits e PRs' },
+                    { name: 'GitHub Contribuições', type: 'github', desc: 'Grade de commits e PRs ao vivo do seu perfil' },
                     { name: 'Cotas de IA (CodexBar)', type: 'ai-quota', desc: 'Monitor de limites e resets de Claude, OpenAI, Cursor e Gemini' },
                   ].map((w, idx) => {
                     const currentWs = workspaces.find((ws) => ws.id === activeWorkspaceId);
@@ -357,6 +460,93 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                     );
                   })}
                 </div>
+
+                {/* Configurações Avançadas dos Widgets Ativos */}
+                <div className="space-y-3 pt-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-white/40">
+                    Configurações dos Widgets
+                  </h4>
+
+                  {/* Configuração do GitHub */}
+                  <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs font-bold text-white">GitHub Contribuições</div>
+                      <span className="text-[10px] text-white/40 font-mono">github.com/{githubUsername}</span>
+                    </div>
+                    <div className="text-[11px] text-white/50">
+                      Informe o seu usuário para exibir seus commits e quadradinhos reais
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={tempUser}
+                        onChange={(e) => setTempUser(e.target.value)}
+                        placeholder="ex: vagneralencar"
+                        className="flex-grow px-3 py-1.5 rounded-xl bg-black/40 border border-white/10 text-xs font-mono text-white focus:outline-none focus:border-blue-400/50"
+                      />
+                      <button
+                        onClick={() => setGithubUsername(tempUser.trim())}
+                        className="px-3 py-1.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-xs font-medium text-white transition-colors"
+                      >
+                        Salvar
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Configuração de Clima */}
+                  <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs font-bold text-white">Clima ao Vivo</div>
+                      <span className="text-[10px] text-white/40">{weatherCity}</span>
+                    </div>
+                    <div className="text-[11px] text-white/50">
+                      Cidade padrão para previsão do tempo e temperatura
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={tempCity}
+                        onChange={(e) => setTempCity(e.target.value)}
+                        placeholder="ex: São Paulo, Rio de Janeiro"
+                        className="flex-grow px-3 py-1.5 rounded-xl bg-black/40 border border-white/10 text-xs text-white focus:outline-none focus:border-blue-400/50"
+                      />
+                      <button
+                        onClick={() => setWeatherCity(tempCity.trim())}
+                        className="px-3 py-1.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-xs font-medium text-white transition-colors"
+                      >
+                        Salvar
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Configuração do Pomodoro */}
+                  <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs font-bold text-white">Timer Pomodoro</div>
+                      <span className="text-[10px] text-white/40">{pomodoroMinutes} minutos</span>
+                    </div>
+                    <div className="text-[11px] text-white/50">
+                      Duração do ciclo de foco em minutos
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="number"
+                        min="5"
+                        max="90"
+                        value={tempPomodoro}
+                        onChange={(e) => setTempPomodoro(Number(e.target.value))}
+                        className="w-24 px-3 py-1.5 rounded-xl bg-black/40 border border-white/10 text-xs font-mono text-white focus:outline-none focus:border-blue-400/50"
+                      />
+                      <span className="text-xs text-white/50">minutos</span>
+                      <button
+                        onClick={() => setPomodoroMinutes(tempPomodoro || 25)}
+                        className="ml-auto px-3 py-1.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-xs font-medium text-white transition-colors"
+                      >
+                        Salvar
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -374,6 +564,134 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                   <p className="text-emerald-400 font-medium">
                     Zero telemetria, zero rastreamento de dados ou envio de estatísticas para servidores externos.
                   </p>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'updates' && (
+              <div className="space-y-5">
+                <div>
+                  <h3 className="text-sm font-semibold mb-1">Atualizações do VMedia Dock</h3>
+                  <p className="text-xs text-white/50 mb-4">
+                    Verifique novas versões publicadas no GitHub Releases oficial
+                  </p>
+
+                  {/* Card de Status da Versão */}
+                  <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-xs text-white/50">Versão Instalada</div>
+                        <div className="text-base font-bold font-mono text-white">
+                          v{updateInfo?.current_version || '0.1.0'}
+                        </div>
+                      </div>
+
+                      {updateInfo?.has_update ? (
+                        <div className="text-right">
+                          <div className="text-xs text-cyan-400 font-semibold">Nova versão disponível!</div>
+                          <div className="text-base font-bold font-mono text-cyan-300">
+                            v{updateInfo.latest_version}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Atualizado</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Botões de Ação */}
+                    <div className="flex items-center gap-3 pt-2 border-t border-white/10">
+                      <button
+                        onClick={async () => {
+                          setUpdateError(null);
+                          const res = await checkForUpdates();
+                          if (!res) {
+                            setUpdateError('Não foi possível verificar atualizações no momento.');
+                          }
+                        }}
+                        disabled={isCheckingUpdate || isInstalling}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-white transition-all disabled:opacity-50"
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 ${isCheckingUpdate ? 'animate-spin' : ''}`} />
+                        <span>{isCheckingUpdate ? 'Verificando...' : 'Buscar Atualizações'}</span>
+                      </button>
+
+                      {updateInfo?.has_update && updateInfo.download_url && (
+                        <button
+                          onClick={async () => {
+                            if (!updateInfo?.download_url) return;
+                            setIsInstalling(true);
+                            setUpdateError(null);
+                            try {
+                              await tauriService.installUpdate(updateInfo.download_url, updateRepo);
+                            } catch (err: any) {
+                              setUpdateError(err?.message || 'Falha ao baixar/iniciar o instalador.');
+                              setIsInstalling(false);
+                            }
+                          }}
+                          disabled={isInstalling}
+                          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-xs font-bold text-white shadow-lg shadow-cyan-500/20 transition-all disabled:opacity-50"
+                        >
+                          <Download className={`w-3.5 h-3.5 ${isInstalling ? 'animate-bounce' : ''}`} />
+                          <span>{isInstalling ? 'Baixando e Instalando...' : 'Atualizar e Reiniciar Agora'}</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {updateError && (
+                      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-rose-500/15 border border-rose-400/30 text-rose-300 text-xs">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <span>{updateError}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Notas de Atualização se houver */}
+                  {updateInfo?.has_update && updateInfo.release_notes && (
+                    <div className="mt-4 p-4 rounded-2xl bg-white/5 border border-white/10">
+                      <h4 className="text-xs font-bold text-white/80 mb-2">Novidades da versão v{updateInfo.latest_version}:</h4>
+                      <div className="text-xs text-white/60 whitespace-pre-wrap font-sans leading-relaxed max-h-40 overflow-y-auto">
+                        {updateInfo.release_notes}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Configuração do Repositório GitHub */}
+                  <div className="mt-5 pt-4 border-t border-white/10">
+                    <label className="block text-xs font-semibold mb-1">Repositório do GitHub (Releases)</label>
+                    <p className="text-[11px] text-white/50 mb-2">
+                      Origem onde os instaladores e tags do VMedia Dock são publicados
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={tempRepo}
+                        onChange={(e) => setTempRepo(e.target.value)}
+                        placeholder="usuario/repositorio"
+                        className="flex-grow px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-white focus:outline-none focus:border-cyan-400/50"
+                      />
+                      <button
+                        onClick={() => {
+                          setUpdateRepo(tempRepo.trim());
+                          checkForUpdates();
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-medium text-white transition-colors"
+                      >
+                        Salvar
+                      </button>
+                      <a
+                        href={`https://github.com/${updateRepo}/releases`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-center p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+                        title="Ver releases no GitHub"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

@@ -1,23 +1,45 @@
-import React from 'react';
-import { GitPullRequest } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Github } from 'lucide-react';
+import { useDockStore } from '../../stores/dockStore';
+import { tauriService } from '../../services/tauri';
+import { GitHubContributionsData } from '../../types/dock';
 
 export const GitHubWidget: React.FC = () => {
-  const contributionsCount = 1420;
-  const pendingPRs = 2;
+  const { githubUsername } = useDockStore();
+  const [data, setData] = useState<GitHubContributionsData>({
+    total_contributions: 0,
+    weeks: [
+      [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0],
+      [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]
+    ],
+    username: githubUsername || 'vagneralencar',
+  });
+  const [loading, setLoading] = useState(false);
 
-  // Grade horizontal: 9 colunas (semanas) x 4 linhas (dias)
-  // Altura total: 4 * 6px + 3 * 2px = 30px (ajuste perfeito dentro dos 48px de altura da barra)
-  const columns = [
-    [1, 2, 0, 1],
-    [0, 1, 3, 2],
-    [2, 3, 1, 0],
-    [1, 0, 4, 3],
-    [0, 2, 1, 2],
-    [3, 4, 2, 1],
-    [2, 1, 3, 4],
-    [1, 3, 2, 0],
-    [2, 4, 3, 1],
-  ];
+  useEffect(() => {
+    let isMounted = true;
+    const fetchContributions = async () => {
+      setLoading(true);
+      try {
+        const res = await tauriService.getGitHubContributions(githubUsername);
+        if (isMounted && res) {
+          setData(res);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar contribuições do GitHub:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchContributions();
+    // Atualiza a cada 30 minutos
+    const interval = setInterval(fetchContributions, 30 * 60 * 1000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [githubUsername]);
 
   const getColorClass = (level: number) => {
     switch (level) {
@@ -35,31 +57,31 @@ export const GitHubWidget: React.FC = () => {
   };
 
   return (
-    <div 
+    <a
+      href={`https://github.com/${data.username}`}
+      target="_blank"
+      rel="noreferrer"
       className="flex items-center gap-3 px-3 h-12 rounded-2xl bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/20 transition-all duration-200 cursor-pointer shadow-sm group select-none"
-      title={`${contributionsCount} contribuições no ano | ${pendingPRs} PRs aguardando revisão`}
+      title={`GitHub: @${data.username} | ${data.total_contributions} contribuições no último ano`}
     >
       {/* Indicador Numérico e PRs */}
       <div className="flex flex-col justify-center min-w-[70px]">
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-bold text-white leading-none">
-            {contributionsCount.toLocaleString('pt-BR')}
+            {loading && data.total_contributions === 0 ? '...' : data.total_contributions.toLocaleString('pt-BR')}
           </span>
-          {pendingPRs > 0 && (
-            <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-purple-500/25 text-purple-300 border border-purple-400/30 text-[9px] font-semibold leading-none">
-              <GitPullRequest className="w-2.5 h-2.5" />
-              {pendingPRs}
-            </span>
-          )}
+          <span className="flex items-center gap-0.5 px-1 py-0.5 rounded-full bg-neutral-800/80 text-white/60 border border-white/10 text-[9px] font-semibold leading-none">
+            <Github className="w-2.5 h-2.5" />
+          </span>
         </div>
-        <span className="text-[9px] text-white/50 leading-tight mt-0.5">
-          este ano
+        <span className="text-[9px] text-white/50 leading-tight mt-0.5 truncate max-w-[80px]">
+          @{data.username}
         </span>
       </div>
 
-      {/* Grade de Contribuições estilo GitHub (orientação horizontal correta) */}
+      {/* Grade de Contribuições estilo GitHub (orientação horizontal com dados ao vivo) */}
       <div className="flex items-center gap-[3px] p-1.5 rounded-xl bg-black/30 border border-white/10">
-        {columns.map((col, colIdx) => (
+        {data.weeks.slice(0, 9).map((col, colIdx) => (
           <div key={colIdx} className="flex flex-col gap-[3px]">
             {col.map((level, rowIdx) => (
               <div 
@@ -70,6 +92,6 @@ export const GitHubWidget: React.FC = () => {
           </div>
         ))}
       </div>
-    </div>
+    </a>
   );
 };

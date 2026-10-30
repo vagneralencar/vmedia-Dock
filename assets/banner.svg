@@ -1,0 +1,250 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bg-glow" cx="50%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#1e1b4b" stop-opacity="0.8" />
+      <stop offset="50%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </radialGradient>
+
+    <!-- Glass dock linear gradient -->
+    <linearGradient id="glass-dock" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.14" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.04" />
+    </linearGradient>
+
+    <linearGradient id="glass-border" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35" />
+      <stop offset="50%" stop-color="#38bdf8" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.08" />
+    </linearGradient>
+
+    <linearGradient id="cyan-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#818cf8" />
+    </linearGradient>
+
+    <!-- Filter for drop shadows -->
+    <filter id="shadow-dock" x="-10%" y="-20%" width="120%" height="160%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="24" stdDeviation="30" flood-color="#000000" flood-opacity="0.85" />
+      <feDropShadow dx="0" dy="0" stdDeviation="16" flood-color="#38bdf8" flood-opacity="0.15" />
+    </filter>
+
+    <filter id="glow-badge" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="640" fill="url(#bg-glow)" />
+
+  <!-- Grid overlay -->
+  <g opacity="0.08" stroke="#ffffff" stroke-width="1">
+    <path d="M0 80 H1280 M0 160 H1280 M0 240 H1280 M0 320 H1280 M0 400 H1280 M0 480 H1280 M0 560 H1280" />
+    <path d="M80 0 V640 M160 0 V640 M240 0 V640 M320 0 V640 M400 0 V640 M480 0 V640 M560 0 V640 M640 0 V640 M720 0 V640 M800 0 V640 M880 0 V640 M960 0 V640 M1040 0 V640 M1120 0 V640 M1200 0 V640" />
+  </g>
+
+  <!-- Header / Hero Text -->
+  <g text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+    <!-- Tag -->
+    <rect x="520" y="85" width="240" height="30" rx="15" fill="#38bdf8" fill-opacity="0.12" stroke="#38bdf8" stroke-opacity="0.3" />
+    <text x="640" y="105" font-size="12" font-weight="700" fill="#38bdf8" letter-spacing="1">WINDOWS 11 &amp; MACOS DOCK</text>
+
+    <!-- Main Title -->
+    <text x="640" y="175" font-size="52" font-weight="900" fill="#ffffff" letter-spacing="-1">
+      VMedia Dock
+    </text>
+
+    <!-- Subtitle -->
+    <text x="640" y="215" font-size="18" font-weight="400" fill="#94a3b8">
+      Dock moderno, ultra-leve (&lt; 45MB RAM) e personalizável com Glassmorphism, Multi-Workspaces e Widgets Vivos
+    </text>
+  </g>
+
+  <!-- ==================== THE FLOATING DOCK ==================== -->
+  <g transform="translate(190, 420)" filter="url(#shadow-dock)">
+    <!-- Main Dock pill container (900 x 84 px) -->
+    <rect x="0" y="0" width="900" height="84" rx="28" fill="url(#glass-dock)" stroke="url(#glass-border)" stroke-width="1.5" />
+
+    <!-- Workspace Switcher Pill -->
+    <g transform="translate(20, 24)">
+      <rect x="0" y="0" width="68" height="36" rx="12" fill="#000000" fill-opacity="0.35" stroke="#ffffff" stroke-opacity="0.1" />
+      <!-- Dots -->
+      <circle cx="18" cy="18" r="7" fill="#3b82f6" stroke="#ffffff" stroke-width="2" stroke-opacity="0.6" />
+      <circle cx="36" cy="18" r="4.5" fill="#10b981" opacity="0.6" />
+      <circle cx="50" cy="18" r="4.5" fill="#a855f7" opacity="0.6" />
+    </g>
+
+    <!-- Divider 1 -->
+    <line x1="104" y1="26" x2="104" y2="58" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1" />
+
+    <!-- Pinned Apps Icons -->
+    <g transform="translate(120, 18)">
+      <!-- App 1: Browser -->
+      <g transform="translate(0, 0)">
+        <rect x="0" y="0" width="48" height="48" rx="14" fill="#1e293b" stroke="#ffffff" stroke-opacity="0.15" />
+        <circle cx="24" cy="24" r="14" fill="#38bdf8" fill-opacity="0.2" />
+        <circle cx="24" cy="24" r="9" stroke="#38bdf8" stroke-width="2" />
+        <!-- Active indicator dot -->
+        <circle cx="24" cy="54" r="2.5" fill="#38bdf8" />
+      </g>
+
+      <!-- App 2: Code / IDE -->
+      <g transform="translate(60, 0)">
+        <rect x="0" y="0" width="48" height="48" rx="14" fill="#0284c7" stroke="#ffffff" stroke-opacity="0.2" />
+        <path d="M18 19 L12 24 L18 29 M30 19 L36 24 L30 29" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+        <!-- Active indicator dot -->
+        <circle cx="24" cy="54" r="2.5" fill="#38bdf8" />
+      </g>
+
+      <!-- App 3: Terminal -->
+      <g transform="translate(120, 0)">
+        <rect x="0" y="0" width="48" height="48" rx="14" fill="#0f172a" stroke="#ffffff" stroke-opacity="0.15" />
+        <path d="M16 19 L21 24 L16 29 M24 29 H32" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+      </g>
+
+      <!-- App 4: Spotify / Media -->
+      <g transform="translate(180, 0)">
+        <rect x="0" y="0" width="48" height="48" rx="14" fill="#15803d" stroke="#ffffff" stroke-opacity="0.2" />
+        <path d="M15 27 C21 25 27 26 33 29 M14 23 C22 20 29 21 34 25 M14 19 C23 16 31 17 35 21" stroke="#ffffff" stroke-width="2" stroke-linecap="round" fill="none" />
+        <!-- Active indicator dot -->
+        <circle cx="24" cy="54" r="2.5" fill="#4ade80" />
+      </g>
+
+      <!-- App 5: Telegram / Chat -->
+      <g transform="translate(240, 0)">
+        <rect x="0" y="0" width="48" height="48" rx="14" fill="#0284c7" stroke="#ffffff" stroke-opacity="0.2" />
+        <path d="M14 24 L34 16 L29 32 L23 27 L20 29 V25 Z" fill="#ffffff" />
+      </g>
+    </g>
+
+    <!-- Divider 2 -->
+    <line x1="422" y1="26" x2="422" y2="58" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1" />
+
+    <!-- Live Widgets -->
+    <g transform="translate(438, 18)">
+      <!-- Widget 1: System Stats (CPU / RAM) -->
+      <g transform="translate(0, 0)">
+        <rect x="0" y="0" width="84" height="48" rx="14" fill="#000000" fill-opacity="0.3" stroke="#ffffff" stroke-opacity="0.1" />
+        <text x="12" y="21" font-family="sans-serif" font-size="10" font-weight="700" fill="#38bdf8">CPU 24%</text>
+        <text x="12" y="37" font-family="sans-serif" font-size="10" font-weight="700" fill="#a78bfa">RAM 48%</text>
+      </g>
+
+      <!-- Widget 2: Clock & Live Date -->
+      <g transform="translate(96, 0)">
+        <rect x="0" y="0" width="84" height="48" rx="14" fill="#000000" fill-opacity="0.3" stroke="#ffffff" stroke-opacity="0.1" />
+        <text x="42" y="23" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="800" fill="#ffffff">14:35</text>
+        <text x="42" y="37" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="600" fill="#94a3b8">SEX, 30 OUT</text>
+      </g>
+
+      <!-- Widget 3: Live GitHub Contributions (Grid) -->
+      <g transform="translate(192, 0)">
+        <rect x="0" y="0" width="144" height="48" rx="14" fill="#000000" fill-opacity="0.3" stroke="#ffffff" stroke-opacity="0.1" />
+        <g transform="translate(10, 10)">
+          <text x="0" y="14" font-family="sans-serif" font-size="12" font-weight="800" fill="#ffffff">49</text>
+          <text x="0" y="26" font-family="sans-serif" font-size="8" font-weight="500" fill="#94a3b8">commits</text>
+          <!-- 6 columns of green dots -->
+          <g transform="translate(48, 2)">
+            <!-- Col 1 -->
+            <rect x="0" y="0" width="6" height="6" rx="1.5" fill="#14532d" />
+            <rect x="0" y="7" width="6" height="6" rx="1.5" fill="#22c55e" />
+            <rect x="0" y="14" width="6" height="6" rx="1.5" fill="#15803d" />
+            <rect x="0" y="21" width="6" height="6" rx="1.5" fill="#166534" />
+            <!-- Col 2 -->
+            <rect x="8" y="0" width="6" height="6" rx="1.5" fill="#22c55e" />
+            <rect x="8" y="7" width="6" height="6" rx="1.5" fill="#4ade80" />
+            <rect x="8" y="14" width="6" height="6" rx="1.5" fill="#15803d" />
+            <rect x="8" y="21" width="6" height="6" rx="1.5" fill="#14532d" />
+            <!-- Col 3 -->
+            <rect x="16" y="0" width="6" height="6" rx="1.5" fill="#166534" />
+            <rect x="16" y="7" width="6" height="6" rx="1.5" fill="#22c55e" />
+            <rect x="16" y="14" width="6" height="6" rx="1.5" fill="#4ade80" />
+            <rect x="16" y="21" width="6" height="6" rx="1.5" fill="#15803d" />
+            <!-- Col 4 -->
+            <rect x="24" y="0" width="6" height="6" rx="1.5" fill="#14532d" />
+            <rect x="24" y="7" width="6" height="6" rx="1.5" fill="#166534" />
+            <rect x="24" y="14" width="6" height="6" rx="1.5" fill="#22c55e" />
+            <rect x="24" y="21" width="6" height="6" rx="1.5" fill="#4ade80" />
+            <!-- Col 5 -->
+            <rect x="32" y="0" width="6" height="6" rx="1.5" fill="#22c55e" />
+            <rect x="32" y="7" width="6" height="6" rx="1.5" fill="#4ade80" />
+            <rect x="32" y="14" width="6" height="6" rx="1.5" fill="#166534" />
+            <rect x="32" y="21" width="6" height="6" rx="1.5" fill="#15803d" />
+            <!-- Col 6 -->
+            <rect x="40" y="0" width="6" height="6" rx="1.5" fill="#15803d" />
+            <rect x="40" y="7" width="6" height="6" rx="1.5" fill="#22c55e" />
+            <rect x="40" y="14" width="6" height="6" rx="1.5" fill="#4ade80" />
+            <rect x="40" y="21" width="6" height="6" rx="1.5" fill="#14532d" />
+            <!-- Col 7 -->
+            <rect x="48" y="0" width="6" height="6" rx="1.5" fill="#166534" />
+            <rect x="48" y="7" width="6" height="6" rx="1.5" fill="#14532d" />
+            <rect x="48" y="14" width="6" height="6" rx="1.5" fill="#4ade80" />
+            <rect x="48" y="21" width="6" height="6" rx="1.5" fill="#22c55e" />
+            <!-- Col 8 -->
+            <rect x="56" y="0" width="6" height="6" rx="1.5" fill="#22c55e" />
+            <rect x="56" y="7" width="6" height="6" rx="1.5" fill="#4ade80" />
+            <rect x="56" y="14" width="6" height="6" rx="1.5" fill="#15803d" />
+            <rect x="56" y="21" width="6" height="6" rx="1.5" fill="#14532d" />
+            <!-- Col 9 -->
+            <rect x="64" y="0" width="6" height="6" rx="1.5" fill="#14532d" />
+            <rect x="64" y="7" width="6" height="6" rx="1.5" fill="#166534" />
+            <rect x="64" y="14" width="6" height="6" rx="1.5" fill="#22c55e" />
+            <rect x="64" y="21" width="6" height="6" rx="1.5" fill="#4ade80" />
+          </g>
+        </g>
+      </g>
+    </g>
+
+    <!-- Divider 3 -->
+    <line x1="790" y1="26" x2="790" y2="58" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1" />
+
+    <!-- Settings Button -->
+    <g transform="translate(804, 24)">
+      <rect x="0" y="0" width="36" height="36" rx="12" fill="#ffffff" fill-opacity="0.08" stroke="#ffffff" stroke-opacity="0.12" />
+      <!-- Sliders Icon -->
+      <path d="M12 14 H16 M20 14 H24 M12 22 H14 M18 22 H24 M15 11 V17 M17 19 V25" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" />
+    </g>
+
+    <!-- Drag Grip -->
+    <g transform="translate(850, 24)">
+      <circle cx="6" cy="11" r="1.5" fill="#ffffff" opacity="0.3" />
+      <circle cx="12" cy="11" r="1.5" fill="#ffffff" opacity="0.3" />
+      <circle cx="6" cy="18" r="1.5" fill="#ffffff" opacity="0.3" />
+      <circle cx="12" cy="18" r="1.5" fill="#ffffff" opacity="0.3" />
+      <circle cx="6" cy="25" r="1.5" fill="#ffffff" opacity="0.3" />
+      <circle cx="12" cy="25" r="1.5" fill="#ffffff" opacity="0.3" />
+    </g>
+  </g>
+
+  <!-- Feature Highlights Row -->
+  <g transform="translate(240, 290)" font-family="sans-serif">
+    <!-- Feature 1 -->
+    <g transform="translate(0, 0)">
+      <rect x="0" y="0" width="180" height="42" rx="12" fill="#ffffff" fill-opacity="0.05" stroke="#ffffff" stroke-opacity="0.1" />
+      <circle cx="20" cy="21" r="5" fill="#38bdf8" />
+      <text x="35" y="25" font-size="12" font-weight="600" fill="#f8fafc">Multi-Workspaces</text>
+    </g>
+
+    <!-- Feature 2 -->
+    <g transform="translate(200, 0)">
+      <rect x="0" y="0" width="180" height="42" rx="12" fill="#ffffff" fill-opacity="0.05" stroke="#ffffff" stroke-opacity="0.1" />
+      <circle cx="20" cy="21" r="5" fill="#4ade80" />
+      <text x="35" y="25" font-size="12" font-weight="600" fill="#f8fafc">Live GitHub &amp; CPU</text>
+    </g>
+
+    <!-- Feature 3 -->
+    <g transform="translate(400, 0)">
+      <rect x="0" y="0" width="180" height="42" rx="12" fill="#ffffff" fill-opacity="0.05" stroke="#ffffff" stroke-opacity="0.1" />
+      <circle cx="20" cy="21" r="5" fill="#a78bfa" />
+      <text x="35" y="25" font-size="12" font-weight="600" fill="#f8fafc">Auto-Update GitHub</text>
+    </g>
+
+    <!-- Feature 4 -->
+    <g transform="translate(600, 0)">
+      <rect x="0" y="0" width="180" height="42" rx="12" fill="#ffffff" fill-opacity="0.05" stroke="#ffffff" stroke-opacity="0.1" />
+      <circle cx="20" cy="21" r="5" fill="#f43f5e" />
+      <text x="35" y="25" font-size="12" font-weight="600" fill="#f8fafc">&lt; 45MB RAM (Rust)</text>
+    </g>
+  </g>
+</svg>

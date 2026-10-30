@@ -10,6 +10,10 @@ pub struct AppConfig {
     pub bar_position: String, // "bottom" ou "top"
     pub icon_size: Option<u32>,
     pub autostart: Option<bool>,
+    pub update_repo: Option<String>,
+    pub github_username: Option<String>,
+    pub weather_city: Option<String>,
+    pub pomodoro_minutes: Option<u32>,
     pub workspaces: Vec<Workspace>,
 }
 
@@ -21,6 +25,10 @@ impl Default for AppConfig {
             bar_position: "bottom".to_string(),
             icon_size: Some(48),
             autostart: Some(false),
+            update_repo: Some("vagneralencar/vmedia-dock".to_string()),
+            github_username: Some("vagneralencar".to_string()),
+            weather_city: Some("São Paulo".to_string()),
+            pomodoro_minutes: Some(25),
             workspaces: Workspace::default_workspaces(),
         }
     }

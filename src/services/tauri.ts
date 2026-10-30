@@ -1,4 +1,4 @@
-import { Workspace, SystemMetrics, AppConfig, WindowInfo, AIProviderQuota, MediaTrackInfo } from '../types/dock';
+import { Workspace, SystemMetrics, AppConfig, WindowInfo, AIProviderQuota, MediaTrackInfo, MonitorInfo, UpdateInfo, GitHubContributionsData } from '../types/dock';
 
 const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
@@ -291,6 +291,139 @@ export const tauriService = {
       }
     }
     console.log(`[Media Command]: ${command}`);
+  },
+
+  async openSettingsWindow(): Promise<void> {
+    if (isTauri) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        await invoke('open_settings_window');
+        return;
+      } catch (err) {
+        console.error('Falha ao abrir janela nativa de ajustes:', err);
+      }
+    }
+  },
+
+  async closeSettingsWindow(): Promise<void> {
+    if (isTauri) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        await invoke('close_settings_window');
+        return;
+      } catch (err) {
+        console.error('Falha ao fechar janela nativa de ajustes:', err);
+      }
+    }
+  },
+
+  async startDragWindow(): Promise<void> {
+    if (isTauri) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        await invoke('start_drag_window');
+        return;
+      } catch (err) {
+        console.error('Falha ao iniciar arraste da janela:', err);
+      }
+    }
+  },
+
+  async listMonitors(): Promise<MonitorInfo[]> {
+    if (isTauri) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        return await invoke<MonitorInfo[]>('list_monitors');
+      } catch (err) {
+        console.error('Falha ao listar monitores:', err);
+      }
+    }
+    return [
+      { index: 0, name: 'Tela 1 (Principal)', width: 1920, height: 1080, is_current: true },
+    ];
+  },
+
+  async positionDockWindow(position?: 'bottom' | 'top', monitorIndex?: number): Promise<void> {
+    if (isTauri) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        await invoke('position_dock_window', {
+          position,
+          monitorIndex: monitorIndex !== undefined ? monitorIndex : null,
+        });
+        return;
+      } catch (err) {
+        console.error('Falha ao posicionar janela do dock:', err);
+      }
+    }
+  },
+
+  async getGitHubContributions(username?: string): Promise<GitHubContributionsData> {
+    if (isTauri) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        return await invoke<GitHubContributionsData>('get_github_contributions', { username });
+      } catch (err) {
+        console.error('Falha ao obter contribuições nativas do GitHub:', err);
+      }
+    }
+
+    // Fallback Web com chamada direta
+    try {
+      const u = username || 'vagneralencar';
+      const res = await fetch(`https://github-contributions-api.jogruber.de/v4/${u}?y=last`);
+      if (res.ok) {
+        const data = await res.json();
+        const days = data.contributions || [];
+        const recent = days.slice(-36).map((d: any) => d.level || 0);
+        const weeks: number[][] = [];
+        for (let i = 0; i < recent.length; i += 4) {
+          weeks.push(recent.slice(i, i + 4));
+        }
+        return {
+          total_contributions: data.total?.lastYear || 0,
+          weeks,
+          username: u,
+        };
+      }
+    } catch (e) {
+      console.error('Erro no fallback do GitHub:', e);
+    }
+
+    return {
+      total_contributions: 49,
+      weeks: [
+        [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0],
+        [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 3, 0]
+      ],
+      username: username || 'vagneralencar',
+    };
+  },
+
+  async checkForUpdates(repo?: string): Promise<UpdateInfo> {
+    if (isTauri) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        return await invoke<UpdateInfo>('check_for_updates', { repo });
+      } catch (err: any) {
+        throw new Error(err?.toString() || 'Erro ao verificar atualizações');
+      }
+    }
+    return {
+      current_version: '0.1.0',
+      latest_version: '0.1.0',
+      has_update: false,
+      release_notes: 'Você está usando a versão mais recente.',
+      repo: repo || 'vagneralencar/vmedia-dock',
+    };
+  },
+
+  async installUpdate(downloadUrl: string, repo?: string): Promise<string> {
+    if (isTauri) {
+      const { invoke } = await import('@tauri-apps/api/core');
+      return await invoke<string>('install_update', { downloadUrl, repo });
+    }
+    return 'Simulação de atualização concluída';
   },
 
   async launchApp(path: string): Promise<string> {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sun, CloudRain, CloudSun, Wind } from 'lucide-react';
 import { WeatherPopover } from './WeatherPopover';
+import { useDockStore } from '../../stores/dockStore';
 
 interface WeatherData {
   city: string;
@@ -10,9 +11,10 @@ interface WeatherData {
 }
 
 export const WeatherWidget: React.FC = () => {
+  const { weatherCity } = useDockStore();
   const [isOpen, setIsOpen] = useState(false);
   const [data] = useState<WeatherData>({
-    city: 'São Paulo',
+    city: weatherCity || 'São Paulo',
     temperature: 24,
     condition: 'sunny',
     humidity: 65,

@@ -26,7 +26,32 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     fetchWorkspaces();
+
+    const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+    let unlistenFn: (() => void) | null = null;
+    if (isTauri) {
+      import('@tauri-apps/api/event').then(({ listen }) => {
+        listen('config-updated', () => {
+          fetchWorkspaces();
+        }).then((unlisten) => {
+          unlistenFn = unlisten;
+        });
+      });
+    }
+
+    return () => {
+      if (unlistenFn) unlistenFn();
+    };
   }, [fetchWorkspaces]);
+
+  const openSettings = () => {
+    const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+    if (isTauri) {
+      tauriService.openSettingsWindow();
+    } else {
+      setIsSettingsOpen(true);
+    }
+  };
 
   // Listener de atalhos de teclado globais
   useEffect(() => {
@@ -45,7 +70,7 @@ export const App: React.FC = () => {
         // Ctrl + Alt + S para abrir Ajustes
         if (e.key.toLowerCase() === 's' || e.key === ',') {
           e.preventDefault();
-          setIsSettingsOpen((prev) => !prev);
+          openSettings();
         }
 
         // Ctrl + Alt + Espaço para alternar visibilidade instantânea
@@ -127,7 +152,7 @@ export const App: React.FC = () => {
         className={`fixed inset-x-0 ${positionClass} flex items-center justify-center p-2 transition-all duration-300 ease-out z-30 ${hideTransformClass}`}
       >
         <DockBar 
-          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenSettings={openSettings}
           onAppContextMenu={handleAppContextMenu}
           onDockContextMenu={handleDockContextMenu}
         />
@@ -137,7 +162,7 @@ export const App: React.FC = () => {
       <ContextMenu
         data={contextMenuData}
         onClose={() => setContextMenuData(null)}
-        onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenSettings={openSettings}
         onTogglePinApp={togglePinApp}
         onRemoveApp={removeAppFromWorkspace}
         onLaunchApp={launchApp}
