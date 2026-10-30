@@ -15,7 +15,7 @@
         "title": "VMedia Dock",
         "label": "main",
         "width": 960,
-        "height": 180,
+        "height": 220,
         "resizable": false,
         "fullscreen": false,
         "decorations": false,

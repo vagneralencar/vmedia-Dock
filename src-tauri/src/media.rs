@@ -15,34 +15,47 @@ impl MediaService {
     pub fn get_current_track() -> MediaTrackInfo {
         #[cfg(target_os = "windows")]
         {
-            // Tenta consultar sessões ativas do Windows via PowerShell/WinRT
+            use std::os::windows::process::CommandExt;
+            const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+            // Tenta consultar sessões ativas do Windows via PowerShell/WinRT de forma assíncrona oculta
             let ps_script = r#"
+            $ProgressPreference = 'SilentlyContinue';
             try {
                 [Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager, Windows.Media, ContentType = WindowsRuntime] | Out-Null
                 $asyncOp = [Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager]::RequestAsync()
-                while ($asyncOp.Status -eq 'Started') { Start-Sleep -Milliseconds 10 }
-                $mgr = $asyncOp.GetResults()
-                $session = $mgr.GetCurrentSession()
-                if ($session) {
-                    $propOp = $session.TryGetMediaPropertiesAsync()
-                    while ($propOp.Status -eq 'Started') { Start-Sleep -Milliseconds 10 }
-                    $props = $propOp.GetResults()
-                    $playbackInfo = $session.GetPlaybackInfo()
-                    $isPlaying = $playbackInfo.PlaybackStatus -eq 'Playing'
-                    @{ title = $props.Title; artist = $props.Artist; is_playing = $isPlaying } | ConvertTo-Json -Compress
+                $i = 0
+                while ($asyncOp.Status -eq 'Started' -and $i -lt 20) { Start-Sleep -Milliseconds 15; $i++ }
+                if ($asyncOp.Status -eq 'Completed') {
+                    $mgr = $asyncOp.GetResults()
+                    $session = $mgr.GetCurrentSession()
+                    if ($session) {
+                        $propOp = $session.TryGetMediaPropertiesAsync()
+                        $j = 0
+                        while ($propOp.Status -eq 'Started' -and $j -lt 20) { Start-Sleep -Milliseconds 15; $j++ }
+                        if ($propOp.Status -eq 'Completed') {
+                            $props = $propOp.GetResults()
+                            $playbackInfo = $session.GetPlaybackInfo()
+                            $isPlaying = $playbackInfo.PlaybackStatus -eq 'Playing'
+                            if ($props.Title) {
+                                @{ title = $props.Title; artist = $props.Artist; is_playing = $isPlaying } | ConvertTo-Json -Compress
+                            }
+                        }
+                    }
                 }
             } catch {}
             "#;
 
             if let Ok(output) = std::process::Command::new("powershell")
-                .args(["-NoProfile", "-Command", ps_script])
+                .creation_flags(CREATE_NO_WINDOW)
+                .args(["-NoProfile", "-NonInteractive", "-Command", ps_script])
                 .output()
             {
                 let text = String::from_utf8_lossy(&output.stdout).trim().to_string();
                 if let Ok(val) = serde_json::from_str::<serde_json::Value>(&text) {
-                    let title = val["title"].as_str().unwrap_or("Mídia Windows").to_string();
-                    let artist = val["artist"].as_str().unwrap_or("Spotify / Navegador").to_string();
-                    let is_playing = val["is_playing"].as_bool().unwrap_or(true);
+                    let title = val["title"].as_str().unwrap_or("").to_string();
+                    let artist = val["artist"].as_str().unwrap_or("Spotify / Mídia").to_string();
+                    let is_playing = val["is_playing"].as_bool().unwrap_or(false);
 
                     if !title.is_empty() {
                         return MediaTrackInfo {
@@ -58,10 +71,10 @@ impl MediaService {
 
         // Fallback dinâmico padrão
         MediaTrackInfo {
-            title: "Garota de Ipanema".to_string(),
-            artist: "Tom Jobim & Vinicius".to_string(),
-            is_playing: true,
-            progress_percent: 45,
+            title: "Nenhuma mídia ativa".to_string(),
+            artist: "Spotify / YouTube".to_string(),
+            is_playing: false,
+            progress_percent: 0,
         }
     }
 
@@ -69,22 +82,21 @@ impl MediaService {
     pub fn send_media_key(command: &str) -> Result<(), String> {
         #[cfg(target_os = "windows")]
         {
-            // Código de tecla virtual: Play/Pause (0xB3 / 179), Next (0xB0 / 176), Prev (0xB1 / 177)
-            let vk: u8 = match command {
-                "play_pause" => 0xB3,
-                "next" => 0xB0,
-                "prev" => 0xB1,
+            use windows::Win32::UI::WindowsAndMessaging::{
+                keybd_event, KEYEVENTF_KEYUP, VK_MEDIA_NEXT_TRACK, VK_MEDIA_PLAY_PAUSE, VK_MEDIA_PREV_TRACK,
+            };
+
+            let vk = match command {
+                "play_pause" => VK_MEDIA_PLAY_PAUSE.0 as u8,
+                "next" => VK_MEDIA_NEXT_TRACK.0 as u8,
+                "prev" => VK_MEDIA_PREV_TRACK.0 as u8,
                 _ => return Err("Comando de mídia desconhecido".to_string()),
             };
 
-            // Envia evento de tecla nativo via powershell wscript.shell ou rotina leve
-            let ps_cmd = format!(
-                "$wshell = New-Object -ComObject WScript.Shell; $wshell.SendKeys([char]0x{:X})",
-                vk
-            );
-            let _ = std::process::Command::new("powershell")
-                .args(["-NoProfile", "-Command", &ps_cmd])
-                .spawn();
+            unsafe {
+                keybd_event(vk, 0, Default::default(), 0);
+                keybd_event(vk, 0, KEYEVENTF_KEYUP, 0);
+            }
 
             return Ok(());
         }
