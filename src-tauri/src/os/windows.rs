@@ -14,8 +14,8 @@ impl WindowsOSManager {
 
         unsafe {
             let hwnd_val = HWND(hwnd as _);
-            ShowWindow(hwnd_val, SW_RESTORE);
-            SetForegroundWindow(hwnd_val);
+            let _ = ShowWindow(hwnd_val, SW_RESTORE);
+            let _ = SetForegroundWindow(hwnd_val);
         }
         Ok(())
     }

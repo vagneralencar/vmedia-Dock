@@ -82,20 +82,21 @@ impl MediaService {
     pub fn send_media_key(command: &str) -> Result<(), String> {
         #[cfg(target_os = "windows")]
         {
-            use windows::Win32::UI::WindowsAndMessaging::{
-                keybd_event, KEYEVENTF_KEYUP, VK_MEDIA_NEXT_TRACK, VK_MEDIA_PLAY_PAUSE, VK_MEDIA_PREV_TRACK,
-            };
+            use windows::Win32::UI::WindowsAndMessaging::{PostMessageW, HWND_BROADCAST, WM_APPCOMMAND};
+            use windows::Win32::Foundation::{LPARAM, WPARAM};
 
-            let vk = match command {
-                "play_pause" => VK_MEDIA_PLAY_PAUSE.0 as u8,
-                "next" => VK_MEDIA_NEXT_TRACK.0 as u8,
-                "prev" => VK_MEDIA_PREV_TRACK.0 as u8,
+            // APPCOMMAND_MEDIA_PLAY_PAUSE = 14, APPCOMMAND_MEDIA_NEXTTRACK = 11, APPCOMMAND_MEDIA_PREVIOUSTRACK = 12
+            let app_cmd: usize = match command {
+                "play_pause" => 14,
+                "next" => 11,
+                "prev" => 12,
                 _ => return Err("Comando de mídia desconhecido".to_string()),
             };
 
+            let lparam = (app_cmd << 16) as isize;
+
             unsafe {
-                keybd_event(vk, 0, Default::default(), 0);
-                keybd_event(vk, 0, KEYEVENTF_KEYUP, 0);
+                let _ = PostMessageW(HWND_BROADCAST, WM_APPCOMMAND, WPARAM(0), LPARAM(lparam));
             }
 
             return Ok(());
